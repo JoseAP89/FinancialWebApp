@@ -97,6 +97,7 @@
 .expense-item .item-name { display:flex; align-items:center; gap:8px; flex:1 }
 .expense-item .item-price { font-weight:600; background:#f2ede2; padding:0 6px; border-radius:4px }
 .item-qty { font-size:0.75rem; background:#e7dfd0; padding:0 6px; border-radius:10px; margin-left:1px; }
+.item-description { font-size: 0.8rem;}
 
 .totals { margin-top:0.6rem; }
 .total-line { display:flex; justify-content:space-between; }

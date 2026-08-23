@@ -63,10 +63,10 @@
                             @foreach (var line in tx.TransactionLines)
                             {
                                 <li class="expense-item">
-                                    <span class="item-name">
-                                        <p>@(line.Description ?? "Transaction line")</p>
+                                    <div class="item-name">
+                                        <p class="item-description">@(line.Description ?? "Transaction line")</p>
                                         <span class="item-qty">x@(line.Quantity <= 0 ? 1 : line.Quantity)</span>
-                                    </span>
+                                    </div>
                                     <span class="item-price">@line.Amount.ToString("C")</span>
                                 </li>
                             }

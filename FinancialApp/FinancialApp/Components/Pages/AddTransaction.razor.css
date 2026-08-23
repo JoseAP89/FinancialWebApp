@@ -24,6 +24,8 @@
     font-weight: 600;
     cursor: pointer;
     padding: 0;
+    -webkit-user-select: none; /* Safari */
+    user-select: none; /* Standard syntax (Chrome, Edge, Firefox, Opera) */
 }
 
 .popover-overlay {
@@ -57,4 +59,18 @@
     text-align: left;
     margin-bottom: 0.5em;
     color: rgba(0, 0, 0, 0.6);
+}
+
+.select-accounts-box, .amount-quantity-box {
+    display: flex;
+    flex-wrap: wrap; /* Allows items to move to the next row */
+    gap: 16px; /* Defines space between elements */
+}
+/* Child Components */
+.select-accounts-box > *, .amount-quantity-box > * {
+    /* Calculates exactly 50% width minus half of the gap size */
+    flex-basis: calc(50% - (16px / 2));
+    flex-grow: 1; /* Stretches item to 100% width if it sits alone */
+    min-width: 250px; /* Triggers the wrap to 1 row when space is tight */
+    box-sizing: border-box;
 }

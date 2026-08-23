@@ -52,7 +52,7 @@
                     <div class="receipt-header">
                         <div class="brand">
                             <p>@(tx.Description ?? "Transaction")</p>
-                            <button class="btn btn-sm btn-outline-info" @onclick="() => ToggleExpenseList(tx.Id)">@(IsExpenseListVisible(tx.Id) ? "-" : "+")</button>
+                            <button class="info-icon" @onclick="() => ToggleExpenseList(tx.Id)">@(IsExpenseListVisible(tx.Id) ? "-" : "+")</button>
                         </div>
                         <div class="sub">@tx.Date.ToLocalTime().ToString("MMM dd, yyyy HH:mm")</div>
                     </div>

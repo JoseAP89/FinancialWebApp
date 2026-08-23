@@ -1,3 +1,6 @@
+- Do I need a paymentMethod property on transaction line table? to differentiate credit from cash payments
+- Include posibility to record physical cash from withdrawing money from the check account
+
 - Build a testing project
 - Test the TransactionBalancingService
 - Financial History Total block needs a redesign, like breaking it up into different totals per category

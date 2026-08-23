@@ -14,5 +14,8 @@ namespace FinancialApp.Core.Data.Repositories
 
         // Returns transactions including their lines, without system account lines, between the given start and end (inclusive)
         Task<IEnumerable<Transaction>> ListWithNoSystemLinesByDateRangeAsync(DateOnly start, DateOnly end);
+
+        // Returns the total expenses within the given date range
+        Task<decimal> GetTotalExpenses(DateOnly? start, DateOnly? end);
     }
 }

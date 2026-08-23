@@ -81,8 +81,8 @@ namespace FinancialApp.Components.Pages
                         .Where(line => line.Description != null && !line.Description.Contains("Auto-balance entry"))
                         .ToList() ?? []
                  })
-            .Where(t => t.TransactionLines.Any())
-            .ToList() ?? [];
+                .Where(t => t.TransactionLines.Any())
+                .ToList() ?? [];
             GetSubTotalTransactionValues(FilteredTransactions);
         }
 

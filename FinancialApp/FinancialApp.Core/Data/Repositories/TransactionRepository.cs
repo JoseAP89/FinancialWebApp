@@ -1,3 +1,4 @@
+using FinancialApp.Core.Helpers;
 using FinancialApp.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -56,13 +57,8 @@ public class TransactionRepository : Repository<Transaction>, ITransactionReposi
 
     public async Task<IEnumerable<Transaction>> ListWithNoSystemLinesByDateRangeAsync(DateOnly start, DateOnly end)
     {
-        // Convert DateOnly to LOCAL DateTime first
-        var startLocal = new DateTime(start.Year, start.Month, start.Day, 0, 0, 0, DateTimeKind.Local);
-        var endLocal = new DateTime(end.Year, end.Month, end.Day, 0, 0, 0, DateTimeKind.Local).AddDays(1);
-
-        // Convert to UTC for PostgreSQL
-        var startUtc = startLocal.ToUniversalTime();
-        var endUtc = endLocal.ToUniversalTime();
+        var startUtc = DateUtils.ConvertToUTCPostgreSQL(start);
+        var endUtc = DateUtils.ConvertToUTCPostgreSQL(end, 1);
 
         return await _dbSet
             .AsNoTracking()
@@ -72,4 +68,27 @@ public class TransactionRepository : Repository<Transaction>, ITransactionReposi
             .OrderByDescending(t => t.Date)
             .ToListAsync();
     }
+
+    public async Task<decimal> GetTotalExpenses(DateOnly? start, DateOnly? end)
+    {
+        if (start is null)
+        {
+            start = DateOnly.MinValue;
+        }
+        if (end is null)
+        {
+            end = DateOnly.FromDateTime(DateTime.Now);
+        }
+        var startUtc = DateUtils.ConvertToUTCPostgreSQL(start.Value);
+        var endUtc = DateUtils.ConvertToUTCPostgreSQL(end.Value, 1);
+
+        return await _dbSet
+            .AsNoTracking()
+            .Where(t => t.Date >= startUtc && t.Date < endUtc)
+            .SelectMany(t => t.TransactionLines)
+            .Where(l => l.Account != null
+                     && l.Account.FinancialStatement == FinancialStatement.EXPENSE)
+            .SumAsync(l => l.Amount * l.Quantity);
+    }
+
 }

@@ -64,8 +64,9 @@
                             {
                                 <li class="expense-item">
                                     <div class="item-name">
-                                        <p class="item-description">@(line.Description ?? "Transaction line")</p>
-                                        <span class="item-qty">x@(line.Quantity <= 0 ? 1 : line.Quantity)</span>
+                                        <p class="item-description">
+                                            @(line.Description ?? "Transaction line")<span class="item-qty">x@(line.Quantity <= 0 ? 1 : line.Quantity)</span>
+                                        </p>
                                     </div>
                                     <span class="item-price">@line.Amount.ToString("C")</span>
                                 </li>

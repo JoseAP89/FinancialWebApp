@@ -358,7 +358,8 @@ namespace FinancialApp.Components.Pages
                         AccountId = line.SelectedChildId.Value,
                         Amount = line.Amount,
                         Description = line.Description,
-                        Quantity = line.Quantity
+                        Quantity = line.Quantity,
+                        IsAutoBalanced = line.IsAutoBalanced
                     });
                 }
             }

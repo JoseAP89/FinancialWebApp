@@ -1,7 +1,4 @@
 - "Auto-balance entry" modifications:
-	- Flag the Auto-Balance Lines:
-	  ALTER TABLE transaction_lines ADD COLUMN is_auto_balanced BOOLEAN DEFAULT FALSE;
-	  reasons: Hiding them from user interfaces, Easy identification during audits, Quick filtering for reports
 	- Add Metadata
 	  ALTER TABLE transaction_lines ADD COLUMN auto_balance_reason TEXT;
 	  examples: "User selected Cash account as offset", "System defaulted to Checking", "User payment allocation"

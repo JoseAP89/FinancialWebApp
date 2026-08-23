@@ -64,11 +64,6 @@ public class TransactionRepository : Repository<Transaction>, ITransactionReposi
         var startUtc = startLocal.ToUniversalTime();
         var endUtc = endLocal.ToUniversalTime();
 
-        Console.WriteLine($"Start (Local): {startLocal:yyyy-MM-dd HH:mm:ss.fff}");
-        Console.WriteLine($"Start (UTC): {startUtc:yyyy-MM-dd HH:mm:ss.fff}");
-        Console.WriteLine($"End (Local): {endLocal:yyyy-MM-dd HH:mm:ss.fff}");
-        Console.WriteLine($"End (UTC): {endUtc:yyyy-MM-dd HH:mm:ss.fff}");
-
         return await _dbSet
             .AsNoTracking()
             .Where(t => t.Date >= startUtc && t.Date < endUtc)

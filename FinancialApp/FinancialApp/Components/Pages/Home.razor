@@ -1,0 +1,91 @@
+﻿@page "/"
+
+<div class="center-container">
+    <div class="card">
+        <h2>Annuity Calculator</h2>
+
+        <EditForm EditContext="@EditContext" OnValidSubmit="UpdateResult">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-row">
+                <label for="amount">Initial Amount</label>
+                <!-- text input to allow currency formatting on blur -->
+                <input id="amount" class="input" @bind="AmountDisplay" @onfocus="AmountFocus" @onblur="AmountBlur" />
+            </div>
+
+            <div class="form-row">
+                <label for="deposit">Deposit</label>
+                <!-- use a text input to allow currency formatting on blur -->
+                <input id="deposit" class="input" @bind="DepositDisplay" @onfocus="DepositFocus" @onblur="DepositBlur" />
+            </div>
+
+            <div class="form-row">
+                <label for="rate">Annual interest rate</label>
+                <InputNumber id="rate" @bind-Value="Model.AnnualInterestRate" class="input" step="0.01" />
+            </div>
+
+            <div class="form-row">
+                <label for="period">Period</label>
+                <InputNumber id="period" @bind-Value="Model.Period" class="input" />
+                <small class="help-text">Period must be in months</small>
+            </div>
+
+            <div class="form-row">
+                <button type="button" class="add-deposit-btn" @onclick="AddAdditionalDeposit" title="Add additional deposit" aria-label="Add additional deposit">
+                    <!-- plus icon -->
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </button>
+            </div>
+
+            @if (AdditionalDeposits?.Count > 0)
+            {
+                <div class="additional-deposits">
+                    @for (int i = 0; i < AdditionalDeposits.Count; i++)
+                    {
+                        var ad = AdditionalDeposits[i];
+                        var idx = i; // capture loop index in a local variable to avoid closure capturing the loop variable
+                        <div class="additional-deposit-box" @key=@($"newDepositBox{idx}")>
+                            <button type="button" class="delete-btn" title="Remove deposit" @onclick="() => RemoveAdditionalDeposit(idx)" aria-label="Remove additional deposit">
+                                <!-- trash icon (inline SVG) -->
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path d="M3 6h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </button>
+                            <div class="form-row" @key=@($"newDeposit{idx}")>
+                                <label for=@($"newDeposit{idx}")>New Deposit @(idx+1)</label>
+                                <!-- text input to allow currency formatting on blur for additional deposits -->
+                                <input id=@($"newDeposit{idx}") class="input" @bind="AdditionalDepositDisplays[idx]" @onfocus="() => AdditionalDepositFocus(idx)" @onblur="() => AdditionalDepositBlur(idx)" />
+                            </div>
+                            <div class="form-row" @key=@($"newPeriod{idx}")>
+                                <label for=@($"newPeriod{idx}")>New period @(idx+1)</label>
+                                <InputNumber id=@($"newPeriod{idx}") @bind-Value="ad.Period" class="input" />
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+
+            <button type="submit" class="btn">Calculate</button>
+        </EditForm>
+        
+        @if (FutureValue != 0m)
+        {
+            <div id="result-box">
+                <p>Future Value:</p><p>@($"{FutureValue:C}")</p>
+                @if (AdditionalDepositsTotal != 0m)
+                {
+                    <p>Additional Value:</p><p>@($"{AdditionalDepositsTotal:C}")</p>
+                    <p>Total Value:</p><p>@($"{(FutureValue + AdditionalDepositsTotal):C}")</p>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+

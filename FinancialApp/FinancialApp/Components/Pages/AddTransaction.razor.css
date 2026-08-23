@@ -1,0 +1,60 @@
+.field-with-popover {
+    position: relative; /* container for absolute popover positioning */
+}
+
+.label-with-icon {
+    display: flex;
+    align-items: center;
+}
+
+.info-container {
+    position: relative; /* anchor for the popover so it can overlay without affecting layout */
+    display: inline-block;
+}
+
+.info-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.12);
+    background: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+}
+
+.popover-overlay {
+    position: absolute;
+    bottom: calc(100% + 8px); /* place above the icon */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3000;
+    pointer-events: auto;
+}
+
+.popover-overlay .card {
+    min-width: 240px;
+    max-width: 360px;
+}
+
+/* Small responsive adjustment */
+@media (max-width: 576px) {
+    .popover-overlay .card {
+        min-width: 200px;
+    }
+}
+
+#transaction-container {
+    margin-bottom: 50px;
+    background-color: #f0f8ff;
+}
+
+.line-number {
+    display: inline-block;
+    text-align: left;
+    margin-bottom: 0.5em;
+    color: rgba(0, 0, 0, 0.6);
+}

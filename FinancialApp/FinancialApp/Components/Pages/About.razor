@@ -1,0 +1,73 @@
+@page "/about"
+
+@* Styles moved to Components/Pages/About.razor.css *@
+
+<div class="about-card">
+  <h1>About</h1>
+
+  <h2>FinancialApp</h2>
+  <p class="lead">A small demo web app (Blazor/.NET MAUI based) that demonstrates a simple financial calculator for computing the future value of an annuity.</p>
+
+  <div class="section">
+    <h3>Purpose</h3>
+    <p>Enter an initial amount (<code class="path">PV</code>), a periodic deposit (<code class="path">P</code>), an annual interest rate and a period (in months). The app computes the future value using the formula shown below.</p>
+  </div>
+
+  <div class="section">
+    <h3>Future value (textbook)</h3>
+    <div class="equation" aria-label="Future value formula">
+      <div class="expr">
+        <span class="var">FV</span>
+        =
+        <span class="var">PV</span>
+        ·
+        <span class="power">(1 + r)<sup>n</sup></span>
+        +
+        <span class="var">P</span>
+        ·
+        <span class="fraction">
+          <span class="num">(1 + r)<sup>n</sup> − 1</span>
+          <span class="den">r</span>
+        </span>
+      </div>
+    </div>
+    <ul class="clean">
+      <li><code class="path">PV</code> is the initial amount (present value)</li>
+      <li><code class="path">P</code> is the periodic deposit</li>
+      <li><code class="path">r</code> is the interest rate per period (monthly rate = annualRate / 12)</li>
+      <li><code class="path">n</code> is the number of periods (months)</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h3>Project structure (key files)</h3>
+    <ul class="clean">
+      <li><code class="path">Components/Pages/Home.razor</code> - UI for the calculator (inputs and result)</li>
+      <li><code class="path">Components/Pages/Home.razor.cs</code> - form model (<code class="path">LoanModel</code>), <code class="path">EditContext</code> and calculation logic</li>
+      <li><code class="path">Components/Pages/Home.razor.css</code> - local styles for the page</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h3>How to run</h3>
+    <ol class="clean">
+      <li>Open the solution in Microsoft Visual Studio (2026) that targets <strong>.NET 10</strong>.</li>
+      <li>Set the appropriate startup project (the Blazor/MAUI host) and run (F5) or use the debugger.</li>
+      <li>Navigate to the root page (<code class="path">/</code>) to use the calculator.</li>
+    </ol>
+  </div>
+
+  <div class="section">
+    <h3>Notes</h3>
+    <ul class="clean">
+      <li>The app uses Blazor <code class="path">EditForm</code> with an <code class="path">EditContext</code> and data annotations for validation; this provides behavior similar to reactive forms.</li>
+      <li>The <code class="path">Period</code> input is expressed in months.</li>
+      <li>If you want a different convention for deposit timing (beginning vs end of period) or additional features (export, charts, different compounding), open an issue or extend the calculation logic.</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h3>License</h3>
+    <p>Example/demo code — adapt and reuse as needed.</p>
+  </div>
+</div>

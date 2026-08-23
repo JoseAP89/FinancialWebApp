@@ -1,0 +1,160 @@
+.center-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /*min-height: 70vh;*/
+  padding: 2rem;
+}
+
+.card {
+  width: 100%;
+  max-width: 520px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+label {
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.input {
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid rgba(0,0,0,0.12);
+}
+
+.help-text {
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-top: 0.25rem;
+}
+
+.btn {
+  background:#0b5ed7;
+  margin-top: 20px;
+  color: #fff;
+  padding: 0.6rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* small circular button for adding additional deposits */
+.add-deposit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  margin-top: 0; /* keep consistent with surrounding spacing */
+  background: #0b5ed7;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(11,94,215,0.14);
+}
+
+.add-deposit-btn svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.add-deposit-btn:hover {
+  background: #084bb5;
+}
+
+.result {
+  margin-top: 1rem;
+  font-weight: 700;
+}
+
+/* Styling for the result box shown on the Home page */
+#result-box {
+  margin-top: 20px; /* requested spacing */
+  padding: 0.75rem 1rem;
+  border: 1px solid #e6e6e6; /* light gray border */
+  border-radius: 8px;
+  background: #ffffff;
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* two columns on the x-axis */
+  gap: 0.4rem 1rem;
+  align-items: center;
+}
+
+/* Make label/value pairs look nicer */
+#result-box p {
+  margin: 0.2rem 0;
+  font-size: 0.95rem;
+}
+
+/* odd paragraphs are labels, even are values in the grid markup */
+#result-box p:nth-child(odd) {
+  color: #495057;
+  font-weight: 600;
+}
+
+#result-box p:nth-child(even) {
+  color: #0b5ed7;
+  font-weight: 700;
+  text-align: right;
+}
+
+/* responsive: stack into single column on narrow viewports */
+@media (max-width: 520px) {
+  #result-box {
+    grid-template-columns: 1fr;
+  }
+  #result-box p:nth-child(even) {
+    text-align: left;
+  }
+}
+
+.additional-deposit-box {
+  width: 100%;
+  max-width: 520px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid rgba(0,0,0,0.08);
+  position: relative; /* allow absolute-positioned controls inside */
+}
+
+.additional-deposit-box .delete-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 4px;
+  border: none;
+  background: transparent;
+  color: #d9534f; /* bootstrap danger color */
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.additional-deposit-box .delete-btn:hover {
+  background: rgba(0,0,0,0.04);
+}
+
+.additional-deposit-box .delete-btn svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+}

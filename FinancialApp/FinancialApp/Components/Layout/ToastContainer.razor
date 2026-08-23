@@ -1,0 +1,81 @@
+@using FinancialApp.Infrastructure.Services
+@inject IToastService ToastService
+@implements IDisposable
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3 mb-4" style="z-index: 1080;">
+    @foreach (var t in _toasts)
+    {
+        <div class="toast show mb-2" role="alert" aria-live="polite" aria-atomic="true">
+            <div class="toast-header @GetHeaderClass(t.Level)">
+                @if (!string.IsNullOrEmpty(t.Title))
+                {
+                    <strong class="me-auto">@t.Title</strong>
+                }
+                <button type="button" class="btn-close" aria-label="Close" @onclick="() => Dismiss(t.Id)"></button>
+            </div>
+            <div class="toast-body">
+                @((MarkupString)t.Message)
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private readonly List<IToastService.ToastMessage> _toasts = new();
+
+    protected override void OnInitialized()
+    {
+        // Synchronize initial state with any already-active toasts so messages are
+        // not lost if they were shown before this component initialized.
+        var existing = ToastService.GetActiveToasts();
+        if (existing is not null)
+        {
+            _toasts.AddRange(existing);
+        }
+
+        ToastService.OnShow += HandleShow;
+        ToastService.OnDismiss += HandleDismiss;
+    }
+
+    private void HandleShow(IToastService.ToastMessage msg)
+    {
+        // Ensure UI update happens on the renderer synchronization context
+        _ = InvokeAsync(() =>
+        {
+            _toasts.Add(msg);
+            StateHasChanged();
+        });
+    }
+
+    private void HandleDismiss(Guid id)
+    {
+        _ = InvokeAsync(() =>
+        {
+            var idx = _toasts.FindIndex(t => t.Id == id);
+            if (idx >= 0)
+            {
+                _toasts.RemoveAt(idx);
+                StateHasChanged();
+            }
+        });
+    }
+
+    private void Dismiss(Guid id)
+    {
+        ToastService.Dismiss(id);
+    }
+
+    private string GetHeaderClass(IToastService.ToastLevel level) => level switch
+    {
+        IToastService.ToastLevel.Success => "text-bg-success",
+        IToastService.ToastLevel.Error => "text-bg-danger",
+        IToastService.ToastLevel.Warning => "text-bg-warning",
+        _ => "bg-light"
+    };
+
+    public void Dispose()
+    {
+        ToastService.OnShow -= HandleShow;
+        ToastService.OnDismiss -= HandleDismiss;
+    }
+}

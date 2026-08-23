@@ -1,0 +1,87 @@
+@page "/financial-history"
+@inherits FinancialHistoryBase
+
+<div class="financial-history-page">
+    <h3>Financial History</h3>
+
+    <div class="filter-row mb-3 d-flex gap-2 align-items-end">
+        <div class="form-group">
+            <label>Start date</label>
+            <input class="form-control" type="date" value="@StartDateString" @onchange="OnStartDateChanged" />
+        </div>
+        <div class="form-group">
+            <label>End date</label>
+            <input class="form-control" type="date" value="@EndDateString" @onchange="OnEndDateChanged" />
+        </div>
+    </div>
+    <div id="control-button-box">
+        <button class="btn btn-primary" @onclick="ApplyFilter">Filter</button>
+        <button class="btn btn-outline-secondary ms-2" @onclick="ResetFilter">Reset</button>
+    </div>
+
+    @if (IsLoading)
+    {
+        <div>Loading...</div>
+    }
+    else if (FilteredTransactions is null || !FilteredTransactions.Any())
+    {
+        <div class="alert alert-info">No transactions found for the selected range.</div>
+    }
+    else
+    {
+        <div id="total-transaction-value">
+            <div class="total-period-row">
+                <span class="total-lbl dotted-bottom">Total</span>
+                <span class="total-value dotted-bottom">@PeriodTransactionValue.ToString("C")</span>
+                <span class="total-lbl">Revenue</span>
+                <span class="total-value">@PeriodRevenue.ToString("C")</span>
+                <span class="total-lbl">Expenses</span>
+                <span class="total-value">@PeriodExpenses.ToString("C")</span>
+                @if (Math.Abs(PeriodLiabilities) > 0.001m)
+                {
+                    <span class="total-lbl">Liabilities</span>
+                    <span class="total-value">@PeriodLiabilities.ToString("C")</span>
+                }
+            </div>
+            <div class="date-range">@StartDate?.ToString("MMM dd, yyyy") - @EndDate?.ToString("MMM dd, yyyy")</div>
+        </div>
+        <div class="history-list">
+            @foreach (var tx in FilteredTransactions.OrderByDescending(t => t.Date))
+            {
+                <div class="receipt">
+                    <div class="receipt-header">
+                        <div class="brand">
+                            <p>@(tx.Description ?? "Transaction")</p>
+                            <button class="btn btn-sm btn-outline-info" @onclick="() => ToggleExpenseList(tx.Id)">@(IsExpenseListVisible(tx.Id) ? "-" : "+")</button>
+                        </div>
+                        <div class="sub">@tx.Date.ToLocalTime().ToString("MMM dd, yyyy HH:mm")</div>
+                    </div>
+
+                    @if (IsExpenseListVisible(tx.Id))
+                    {
+                        <ul class="expense-list">
+                            @foreach (var line in tx.TransactionLines)
+                            {
+                                <li class="expense-item">
+                                    <span class="item-name">
+                                        @(line.Description ?? "Transaction line")
+                                        <span class="item-qty">x@(line.Quantity <= 0 ? 1 : line.Quantity)</span>
+                                    </span>
+                                    <span class="item-price">@line.Amount.ToString("C")</span>
+                                </li>
+                            }
+                        </ul>
+                    }
+
+                    <div class="totals">
+                        <div class="total-line grand-total">
+                            <span class="label">TOTAL</span>
+                            <span class="value">@tx.TransactionLines.Sum(l => l.Amount * (l.Quantity <= 0 ? 1 : l.Quantity)).ToString("C")</span>
+                        </div>
+                    </div>
+
+                </div>
+            }
+        </div>
+    }
+</div>

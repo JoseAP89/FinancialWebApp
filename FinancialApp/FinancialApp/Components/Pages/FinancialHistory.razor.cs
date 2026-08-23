@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using FinancialApp.Data.Models;
 using FinancialApp.Core.Data.Repositories;
+using FinancialApp.Core.DTOs;
 
 namespace FinancialApp.Components.Pages
 {
@@ -159,5 +160,6 @@ namespace FinancialApp.Components.Pages
             if (DateTime.TryParse(s, out var d)) return d;
             return null;
         }
+
     }
 }

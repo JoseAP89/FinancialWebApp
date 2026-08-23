@@ -1,5 +1,8 @@
 - Do I need a paymentMethod property on transaction line table? to differentiate credit from cash payments
 - Include posibility to record physical cash from withdrawing money from the check account
+- Check liability functionality
+- Should the "Auto-balance entry" be included in the transaction lines or
+  just editing the respective counter part account?
 
 - Build a testing project
 - Test the TransactionBalancingService

@@ -53,7 +53,7 @@ INSERT INTO Accounts (Name, Description, FinancialStatement, ParentId, IsSystem)
 ('Housing',                 'Rent, mortgage, home maintenance',        'EXPENSE', NULL, FALSE),
 ('Income',                  'All income sources',                      'REVENUE', NULL, FALSE),
 ('Savings',                 'Bank savings and reserve accounts',       'ASSET', NULL, FALSE),
-('Cash & Bank',             'Cash, checking and bank accounts',        'ASSET', NULL, TRUE),  -- System account
+('Cash & Bank',             'Cash, checking and bank accounts',        'ASSET', NULL, FALSE),
 ('Liabilities',             'Credit cards, loans and other liabilities','LIABILITY', NULL, FALSE),
 ('Equity',                  'Owner equity / net worth buckets',        'EQUITY', NULL, TRUE),  -- System account
 ('Personal Care',           'Health, hygiene, and personal grooming',   'EXPENSE', NULL, FALSE),
@@ -148,7 +148,7 @@ INSERT INTO Accounts (Name, Description, FinancialStatement, ParentId, IsSystem)
 -- Cash & Bank subaccounts (SYSTEM ACCOUNTS - hidden from users)
 --------------------------------------------------------------------------------
 INSERT INTO Accounts (Name, Description, FinancialStatement, ParentId, IsSystem) VALUES
-('Cash on Hand',             'Physical cash (system use)',              'ASSET', (SELECT Id FROM Accounts WHERE Name='Cash & Bank' LIMIT 1), TRUE),
+('Cash on Hand',             'Physical cash. Triggers a withdrawal operation',              'ASSET', (SELECT Id FROM Accounts WHERE Name='Cash & Bank' LIMIT 1), FALSE),
 ('Checking Account',         'Primary checking account (system use)',   'ASSET', (SELECT Id FROM Accounts WHERE Name='Cash & Bank' LIMIT 1), TRUE),
 ('Bank Savings Account',     'Bank savings account (system use)',       'ASSET', (SELECT Id FROM Accounts WHERE Name='Cash & Bank' LIMIT 1), TRUE);
 

@@ -474,5 +474,14 @@ namespace FinancialApp.Components.Pages
             ClearValidation();
             await InvokeAsync(StateHasChanged);
         }
+
+        protected bool IsQuantityValid(TransactionLineDTO line)
+        {
+            return line.SelectedChild is not null && (
+                line.SelectedChild.FinancialStatement == Data.Models.FinancialStatement.ASSET ||
+                line.SelectedChild.FinancialStatement == Data.Models.FinancialStatement.LIABILITY ||
+                line.SelectedChild.FinancialStatement == Data.Models.FinancialStatement.REVENUE
+            );
+        }
     }
 }

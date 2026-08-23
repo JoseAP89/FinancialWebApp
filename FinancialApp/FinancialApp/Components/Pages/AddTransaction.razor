@@ -107,7 +107,10 @@
                             <div>
                                 @* Select Quantity *@
                                 <label class="form-label">Quantity</label>
-                                <input class="form-control" type="number" name="quantity" min="1" step="1" value="@line.Quantity" @oninput="@(e => OnLineQuantityChanged(e, line))">
+                                <input class="form-control" type="number" name="quantity" min="1" step="1" 
+                                    value="@line.Quantity" 
+                                       disabled="@IsQuantityValid(line)"
+                                    @oninput="@(e => OnLineQuantityChanged(e, line))">
                             </div>
                         </div>
 

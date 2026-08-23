@@ -104,6 +104,7 @@ public class TransactionBalancingService: ITransactionBalancingService
                 SelectedChildId = checkAccount.Id,
                 Amount = balance,
                 Description = "Auto-balance entry",
+                IsAutoBalanced = true,
                 Quantity = 1
             });
 
@@ -126,6 +127,7 @@ public class TransactionBalancingService: ITransactionBalancingService
                 SelectedChildId = creditCardAccount.Id,
                 Amount = balance,
                 Description = "Auto-balance entry",
+                IsAutoBalanced = true,
                 Quantity = 1
             });
 

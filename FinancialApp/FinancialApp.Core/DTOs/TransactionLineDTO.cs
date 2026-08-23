@@ -14,6 +14,7 @@ public class TransactionLineDTO
     public string? Description { get; set; }
     public decimal Amount { get; set; }
     public int Quantity { get; set; } = 1;
+    public bool IsAutoBalanced { get; set; } = false;
     /// <summary>
     /// 1 = Paying a Liability; -1 = Contracting a liability; other values = no liability action
     /// </summary>

@@ -63,7 +63,7 @@ public class TransactionRepository : Repository<Transaction>, ITransactionReposi
         return await _dbSet
             .AsNoTracking()
             .Where(t => t.Date >= startUtc && t.Date < endUtc)
-            .Include(t => t.TransactionLines.Where(l => l.Account != null && !l.Account.IsSystem))
+            .Include(t => t.TransactionLines.Where(l => l.Account != null && !l.Account.IsSystem && !l.IsAutoBalanced))
                 .ThenInclude(l => l.Account)
             .OrderByDescending(t => t.Date)
             .ToListAsync();

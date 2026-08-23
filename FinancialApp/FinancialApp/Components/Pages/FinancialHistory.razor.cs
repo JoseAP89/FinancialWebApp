@@ -72,16 +72,6 @@ namespace FinancialApp.Components.Pages
 
             var items = await TransactionRepository.ListWithNoSystemLinesByDateRangeAsync(DateOnly.FromDateTime(start), DateOnly.FromDateTime(end));
             FilteredTransactions = items
-                 ?.Select(t => new Transaction
-                 {
-                     Id = t.Id,
-                     Description = t.Description,
-                     Date = t.Date,
-                     // Filter only lines where account amount > 500
-                     TransactionLines = t.TransactionLines?
-                        .Where(line => line.Description != null && !line.Description.Contains("Auto-balance entry"))
-                        .ToList() ?? []
-                 })
                 .Where(t => t.TransactionLines.Any())
                 .ToList() ?? [];
             GetSubTotalTransactionValues(FilteredTransactions);

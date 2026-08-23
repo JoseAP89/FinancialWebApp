@@ -1,8 +1,14 @@
-- Do I need a paymentMethod property on transaction line table? to differentiate credit from cash payments
+- "Auto-balance entry" modifications:
+	- Flag the Auto-Balance Lines:
+	  ALTER TABLE transaction_lines ADD COLUMN is_auto_balanced BOOLEAN DEFAULT FALSE;
+	  reasons: Hiding them from user interfaces, Easy identification during audits, Quick filtering for reports
+	- Add Metadata
+	  ALTER TABLE transaction_lines ADD COLUMN auto_balance_reason TEXT;
+	  examples: "User selected Cash account as offset", "System defaulted to Checking", "User payment allocation"
+	- Allow User Override¿?
+	  Let users choose which account to balance against, Store their choice explicitly
 - Include posibility to record physical cash from withdrawing money from the check account
 - Check liability functionality
-- Should the "Auto-balance entry" be included in the transaction lines or
-  just editing the respective counter part account?
 
 - Build a testing project
 - Test the TransactionBalancingService

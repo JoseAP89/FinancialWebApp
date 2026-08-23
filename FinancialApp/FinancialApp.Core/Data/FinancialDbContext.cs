@@ -65,6 +65,7 @@ namespace FinancialApp.Core.Data
                 entity.Property(tl => tl.Amount).HasColumnName("amount").HasColumnType("decimal(18,2)");
                 entity.Property(tl => tl.Description).HasColumnName("description").HasColumnType("TEXT");
                 entity.Property(tl => tl.Quantity).HasColumnName("quantity").IsRequired().HasDefaultValue(1);
+                entity.Property(tl => tl.IsAutoBalanced).HasColumnName("isautobalanced").IsRequired().HasDefaultValue(false);
 
                 // Check constraint with quoted column name
                 entity.ToTable(t => t.HasCheckConstraint("CK_TransactionLines_Quantity", "\"quantity\" >= 1"));

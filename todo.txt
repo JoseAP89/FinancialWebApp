@@ -1,0 +1,4 @@
+- Build a testing project
+- Test the TransactionBalancingService
+- Financial History Total block needs a redesign, like breaking it up into different totals per category
+- Export financials into a csv file

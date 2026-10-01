@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Data;
 
 namespace FinancialApp.Core.Services;
 
@@ -43,6 +44,15 @@ public class TransactionBalancingService: ITransactionBalancingService
                         line.SelectedChildId!.Value);
                     continue;
                 }
+                if (acct.Name.Equals("Cash on Hand"))
+                {
+                    var checkAcc = await _accountRepository.GetByNameAsync("Checking Account"); 
+                    decimal totalAmount = await _accountRepository.GetAccountTotalAsync(checkAcc!.Id);
+                    if (line.Amount > totalAmount)
+                    {
+                        throw new ArgumentException("Cannot withdraw a superior quantity than what is currently on your account");
+                    }
+                }
 
                 // Apply financial statement rules
                 line.Amount = AdjustAmountForFinancialStatement(line.Amount, acct.FinancialStatement, line.LiabilityAction);
@@ -54,10 +64,17 @@ public class TransactionBalancingService: ITransactionBalancingService
                 else
                     debit += lineValue;
             }
+            catch (ArgumentException ex)
+            {
+                logger?.LogError(ex, "BalanceTransaction: failed while reading account for line account id {AccountId}",
+                    line.SelectedChildId!.Value);
+                throw;
+            }
             catch (Exception ex)
             {
                 logger?.LogError(ex, "BalanceTransaction: failed while reading account for line account id {AccountId}",
                     line.SelectedChildId!.Value);
+                throw;
             }
         }
 

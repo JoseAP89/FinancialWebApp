@@ -1,11 +1,7 @@
+- Check liability functionality
 - "Auto-balance entry" modifications:
-	- Add Metadata
-	  ALTER TABLE transaction_lines ADD COLUMN auto_balance_reason TEXT;
-	  examples: "User selected Cash account as offset", "System defaulted to Checking", "User payment allocation"
 	- Allow User Override¿?
 	  Let users choose which account to balance against, Store their choice explicitly
-- Include posibility to record physical cash from withdrawing money from the check account
-- Check liability functionality
 
 - Build a testing project
 - Test the TransactionBalancingService

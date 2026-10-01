@@ -378,8 +378,20 @@ namespace FinancialApp.Components.Pages
                 Logger?.LogWarning("CreateTransaction aborted: validation failed. Errors: {Errors}", string.Join("; ", GetValidationErrors()));
                 return;
             }
-
-            TransactionLines = await TransactionBalancingService.BalanceTransactionAsync(TransactionLines, Logger);
+            try
+            {
+                TransactionLines = await TransactionBalancingService.BalanceTransactionAsync(TransactionLines, Logger);
+            }
+            catch (ArgumentException e)
+            {
+                ToastService.ShowError(e.Message);
+                return;
+            }
+            catch (Exception)
+            {
+                ToastService.ShowError("Balance transaction operation failed");
+                return;
+            }
             var tx = BuildTransactionFromInputs();
             Logger?.LogDebug("CreateTransaction debug: {@Transaction}", tx);
 

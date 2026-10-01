@@ -1,4 +1,5 @@
 using FinancialApp.Data.Models;
+using System;
 using System.Threading.Tasks;
 
 namespace FinancialApp.Core.Data.Repositories
@@ -11,5 +12,8 @@ namespace FinancialApp.Core.Data.Repositories
         Task<IEnumerable<Account>> GetAllChildAccountsByParentIdAsync(int parentId);
         Task<IEnumerable<Account>> GetVisibleParentAccountsAsync();
         Task<IEnumerable<Account>> GetVisibleChildAccountsByParentIdAsync(int parentId);
+        // Returns the total amount for the given account including its descendant accounts.
+        // beginDate and endDate are optional; when provided they filter by Transaction.Date (inclusive start, exclusive end + 1 day).
+        Task<decimal> GetAccountTotalAsync(int accountId, DateOnly? beginDate = null, DateOnly? endDate = null, bool includeChildren = false);
     }
 }

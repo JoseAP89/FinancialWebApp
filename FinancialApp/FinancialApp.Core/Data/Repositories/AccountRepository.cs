@@ -1,8 +1,10 @@
 using FinancialApp.Data.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FinancialApp.Core.Helpers;
 
 namespace FinancialApp.Core.Data.Repositories
 {
@@ -62,7 +64,7 @@ namespace FinancialApp.Core.Data.Repositories
             return await _dbSet
                 .AsNoTracking()
                 .Where(a => a.ParentId == null
-                            && !a.IsSystem 
+                            && !a.IsSystem
                             && a.FinancialStatement != FinancialStatement.EQUITY)
                 .OrderBy(a => a.Name)
                 .ToListAsync();
@@ -79,5 +81,44 @@ namespace FinancialApp.Core.Data.Repositories
                 .ToListAsync();
         }
 
+        public async Task<decimal> GetAccountTotalAsync(int accountId, DateOnly? beginDate = null, DateOnly? endDate = null, bool includeChildren = false)
+        {
+            // Build the base transaction line query for the account
+            var tlQuery = _context.TransactionLines
+                .AsNoTracking()
+                .Where(tl => tl.AccountId == accountId);
+
+            if (includeChildren)
+            {
+                // Collect descendant ids by querying only the relevant subtree iteratively.
+                var accountIds = _context.Accounts
+                    .Where(a => a.ParentId == accountId)
+                    .Select(a => a.Id)
+                    .ToList();
+
+                // Replace tlQuery to filter by all collected account ids
+                tlQuery = _context.TransactionLines
+                    .AsNoTracking()
+                    .Where(tl => accountIds.Contains(tl.AccountId));
+            }
+
+            // Apply optional date filters by joining Transaction (navigation property)
+            if (beginDate.HasValue)
+            {
+                var startUtc = DateUtils.ConvertToUTCPostgreSQL(beginDate.Value);
+                tlQuery = tlQuery.Where(tl => tl.Transaction != null && tl.Transaction.Date >= startUtc);
+            }
+
+            if (endDate.HasValue)
+            {
+                var endUtc = DateUtils.ConvertToUTCPostgreSQL(endDate.Value, 1);
+                tlQuery = tlQuery.Where(tl => tl.Transaction != null && tl.Transaction.Date < endUtc);
+            }
+
+            // Execute single-server aggregate; multiply Amount * Quantity
+            var total = await tlQuery.SumAsync(tl => tl.Amount * tl.Quantity);
+            return total;
+        }
     }
+
 }

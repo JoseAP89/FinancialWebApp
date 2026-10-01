@@ -1,5 +1,7 @@
 - Create functionality to keep savings in personalized accounts, like Bonds, Nu saving account and so on. This
 	would require the functionality to create a new account for the user.
+	The delete functionality for a saving account should warn the user that if that account has money then the account will breaking
+	deleted and the money on it will restored to his checking accounta, also, all related transaction lines will be deleted as well.
 - Check liability functionality
 - "Auto-balance entry" modifications:
 	- Allow User Override¿?

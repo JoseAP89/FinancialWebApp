@@ -1,3 +1,5 @@
+- Create functionality to keep savings in personalized accounts, like Bonds, Nu saving account and so on. This
+	would require the functionality to create a new account for the user.
 - Check liability functionality
 - "Auto-balance entry" modifications:
 	- Allow User Override¿?

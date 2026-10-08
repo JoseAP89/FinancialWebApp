@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using FinancialApp.Data.Models;
 using FinancialApp.Core.Data.Repositories;
 using FinancialApp.Core.DTOs;
+using MudBlazor;
 
 namespace FinancialApp.Components.Pages
 {
@@ -20,6 +21,7 @@ namespace FinancialApp.Components.Pages
 
         protected IEnumerable<Transaction> FilteredTransactions { get; set; } = Enumerable.Empty<Transaction>();
 
+        protected bool _tableView { get; set; } = true;
         protected bool IsLoading { get; set; }
         protected decimal PeriodTransactionValue { get; set; }
         protected decimal PeriodExpenses { get; set; }
@@ -142,6 +144,27 @@ namespace FinancialApp.Components.Pages
         protected bool IsExpenseListVisible(int transactionId)
         {
             return ExpandedTransactions.Contains(transactionId);
+        }
+
+        protected TableGroupDefinition<FlatTransactionRow> TransactionGroupDefinition = new()
+        {
+            GroupName = "Transaction",
+            Indentation = true,
+            Expandable = false,
+            Selector = row => row.Transaction.Id
+        };
+
+        protected IEnumerable<FlatTransactionRow> FlatTransactions =>
+            (FilteredTransactions ?? Enumerable.Empty<Transaction>())
+                .OrderByDescending(transaction => transaction.Date)
+                .SelectMany(transaction => transaction.TransactionLines.Select(line =>
+                    new FlatTransactionRow(transaction, line)));
+
+        protected sealed record FlatTransactionRow(Transaction Transaction, TransactionLine Line)
+        {
+            public int Quantity => Line.Quantity <= 0 ? 1 : Line.Quantity;
+
+            public decimal LineTotal => Line.Amount * Quantity;
         }
 
         private DateTime? ParseDate(string? s)

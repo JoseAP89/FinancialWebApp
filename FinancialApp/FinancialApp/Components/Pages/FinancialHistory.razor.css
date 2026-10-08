@@ -119,6 +119,24 @@
 
 .financial-history-page { padding: 1rem }
 
+.mud-table-cell-custom-group {
+    font-weight: 500;
+}
+.mud-table-cell-custom-group-footer {
+    padding-bottom: 50px;
+    text-align: right;
+}
+
+.group-total {
+    font-weight: 700 !important;
+}
+.group-header-cell{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
 @media (max-width:600px) { 
     .receipt { 
         max-width:100%;

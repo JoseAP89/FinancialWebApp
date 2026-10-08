@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components;
 // using System.Timers; (use fully-qualified name to avoid ambiguity with System.Threading.Timer)
 using Microsoft.Extensions.Logging;
 using FinancialApp.Data.Models;
+using AccountModel = FinancialApp.Data.Models.Account;
 using FinancialApp.Core.Data.Repositories;
 using FinancialApp.Core.DTOs;
 using FinancialApp.Infrastructure.Services;
@@ -31,11 +32,11 @@ namespace FinancialApp.Components.Pages
         protected IToastService ToastService { get; set; } = null!;
 
 
-        private Account CreditCard { get; set; } = null!;
+        private AccountModel CreditCard { get; set; } = null!;
 
-        protected List<Account> ParentAccounts { get; set; } = [];
+        protected List<AccountModel> ParentAccounts { get; set; } = [];
 
-        protected List<Account> ChildAccounts { get; set; } = [];
+        protected List<AccountModel> ChildAccounts { get; set; } = [];
 
         private string TransactionDescription { get; set; } = string.Empty;
 
@@ -48,15 +49,15 @@ namespace FinancialApp.Components.Pages
             IsLoading = true;
             try
             {
-                CreditCard = await AccountRepository.GetByNameAsync("Credit Card") ?? new Account();
+                CreditCard = await AccountRepository.GetByNameAsync("Credit Card") ?? new AccountModel();
                 var parents = await AccountRepository.GetVisibleParentAccountsAsync();
-                ParentAccounts = parents?.ToList() ?? new List<Account>();
+                ParentAccounts = parents?.ToList() ?? new List<AccountModel>();
             }
             catch (Exception ex)
             {
                 ErrorMessage = "Unable to load accounts. Please check the database connection.";
                 Logger?.LogError(ex, "Failed to load parent accounts in PersonalFinance component.");
-                ParentAccounts = new List<Account>();
+                ParentAccounts = new List<AccountModel>();
             }
             finally
             {
@@ -208,7 +209,7 @@ namespace FinancialApp.Components.Pages
             else
             {
                 line.SelectedParentId = null;
-                line.ChildAccounts = new List<Account>();
+                line.ChildAccounts = new List<AccountModel>();
                 line.SelectedChildId = null;
                 line.SelectedChild = null;
                 // hide both popovers and stop timers
@@ -330,12 +331,12 @@ namespace FinancialApp.Components.Pages
             try
             {
                 var children = await AccountRepository.GetVisibleChildAccountsByParentIdAsync(parentId);
-                line.ChildAccounts = children?.ToList() ?? new List<Account>();
+                line.ChildAccounts = children?.ToList() ?? new List<AccountModel>();
             }
             catch (Exception ex)
             {
                 Logger?.LogError(ex, "Failed to load child accounts for parent id {ParentId} in line.", parentId);
-                line.ChildAccounts = new List<Account>();
+                line.ChildAccounts = new List<AccountModel>();
             }
         }
 

@@ -1,0 +1,68 @@
+@page "/account"
+@inherits AccountBase
+@using AccountModel = FinancialApp.Data.Models.Account
+@using MudBlazor
+
+<PageTitle>Accounts</PageTitle>
+
+<div class="account-page">
+    <div class="account-header">
+        <div>
+            <MudText Typo="Typo.h4">Accounts</MudText>
+            <MudText Typo="Typo.body2" Class="account-subtitle">Manage and review the accounts in your database.</MudText>
+        </div>
+    </div>
+
+    @if (IsLoading)
+    {
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="account-loading" />
+    }
+    else if (!string.IsNullOrWhiteSpace(ErrorMessage))
+    {
+        <MudAlert Severity="Severity.Error" Class="account-message">@ErrorMessage</MudAlert>
+    }
+    else
+    {
+        <MudTable T="AccountModel"
+                  Items="FilteredAccounts"
+                  Dense="true"
+                  Hover="true"
+                  Striped="true"
+                  Breakpoint="Breakpoint.Sm"
+                  Class="account-table">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Account list</MudText>
+                <MudSpacer />
+                <MudTextField T="string"
+                              Value="SearchString"
+                              ValueChanged="OnSearchChanged"
+                              Placeholder="Search accounts"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Medium"
+                              Immediate="true"
+                              Clearable="true"
+                              Class="account-search" />
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>ID</MudTh>
+                <MudTh>Name</MudTh>
+                <MudTh>Description</MudTh>
+                <MudTh>Financial Statement</MudTh>
+                <MudTh>Parent ID</MudTh>
+                <MudTh>Created at</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="ID">@context.Id</MudTd>
+                <MudTd DataLabel="Name">@context.Name</MudTd>
+                <MudTd DataLabel="Description">@context.Description</MudTd>
+                <MudTd DataLabel="Financial Statement">@context.FinancialStatement</MudTd>
+                <MudTd DataLabel="Parent ID">@(context.ParentId?.ToString() ?? "—")</MudTd>
+                <MudTd DataLabel="Created at">@context.CreatedAt.ToLocalTime().ToString("MMM d, yyyy HH:mm")</MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText Class="account-empty">No matching accounts found.</MudText>
+            </NoRecordsContent>
+        </MudTable>
+    }
+</div>

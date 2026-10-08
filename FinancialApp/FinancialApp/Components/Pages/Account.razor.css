@@ -1,0 +1,45 @@
+.account-page {
+    padding: 1.5rem;
+}
+
+.account-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.account-subtitle {
+    color: var(--mud-palette-text-secondary);
+    margin-top: 0.25rem;
+}
+
+.account-loading {
+    margin-bottom: 1rem;
+}
+
+.account-message {
+    margin-bottom: 1rem;
+}
+
+.account-table {
+    overflow-x: auto;
+}
+
+.account-search {
+    min-width: 18rem;
+}
+
+.account-empty {
+    padding: 1rem;
+    text-align: center;
+}
+
+@media (max-width: 600px) {
+    .account-page {
+        padding: 1rem 0.5rem;
+    }
+
+    .account-search {
+        min-width: 12rem;
+    }
+}

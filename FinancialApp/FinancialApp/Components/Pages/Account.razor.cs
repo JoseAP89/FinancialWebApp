@@ -1,7 +1,9 @@
 using FinancialApp.Core.Data.Repositories;
 using AccountModel = FinancialApp.Data.Models.Account;
+using FinancialApp.Components.Accounts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
+using MudBlazor;
 
 namespace FinancialApp.Components.Pages;
 
@@ -12,6 +14,12 @@ public class AccountBase : ComponentBase
 
     [Inject]
     protected ILogger<AccountBase> Logger { get; set; } = null!;
+
+    [Inject]
+    protected IDialogService DialogService { get; set; } = null!;
+
+    [Inject]
+    protected ISnackbar Snackbar { get; set; } = null!;
 
     protected IReadOnlyList<AccountModel> Accounts { get; private set; } = [];
     protected string SearchString { get; private set; } = string.Empty;
@@ -53,5 +61,44 @@ public class AccountBase : ComponentBase
     protected void OnSearchChanged(string? searchString)
     {
         SearchString = searchString ?? string.Empty;
+    }
+
+    protected async Task OpenCreateAccountDialogAsync()
+    {
+        var parameters = new DialogParameters
+        {
+            [nameof(CreateAccountBase.ParentAccounts)] = Accounts
+                .Where(account => !account.IsSystem)
+                .OrderBy(account => account.Name)
+                .ToList()
+        };
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        };
+
+        var dialog = await DialogService.ShowAsync<CreateAccount>("Create account", parameters, options);
+        var result = await dialog.Result;
+
+        if (result is null || result.Canceled || result.Data is not AccountModel account)
+        {
+            return;
+        }
+
+        try
+        {
+            await AccountRepository.AddAsync(account);
+            await AccountRepository.SaveChangesAsync();
+            Accounts = Accounts
+                .Append(account)
+                .OrderBy(existingAccount => existingAccount.Name)
+                .ToList();
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Failed to create an account.");
+            Snackbar.Add("Unable to create the account. Please try again.", Severity.Error);
+        }
     }
 }

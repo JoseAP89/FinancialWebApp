@@ -14,6 +14,13 @@ namespace FinancialApp.Core.Data.Repositories
         {
         }
 
+        public override async Task AddAsync(Account entity)
+        {
+            entity.IsSystem = false; // Ensure new accounts are not system accounts by default
+            entity.CreatedAt = DateTime.UtcNow;
+            await base.AddAsync(entity);
+        }
+
         public async Task<Account?> GetByNameAsync(string name)
         {
             if (string.IsNullOrWhiteSpace(name))

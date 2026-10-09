@@ -18,6 +18,9 @@ public class CreateAccountBase : ComponentBase
 
     protected MudForm _form = null!;
     protected Account _account = new();
+    protected IEnumerable<Account> MatchingParentAccounts =>
+        ParentAccounts.Where(account => account.FinancialStatement == _account.FinancialStatement);
+
     private string? _nameValidationError;
 
     protected void Cancel()
@@ -27,7 +30,7 @@ public class CreateAccountBase : ComponentBase
 
     protected async Task SubmitAsync()
     {
-        await _form.Validate();
+        await _form.ValidateAsync();
 
         if (!_form.IsValid)
         {
@@ -38,7 +41,7 @@ public class CreateAccountBase : ComponentBase
         if (existingAccount is not null)
         {
             _nameValidationError = "An account with that name already exists";
-            await _form.Validate();
+            await _form.ValidateAsync();
             return;
         }
 
@@ -53,5 +56,10 @@ public class CreateAccountBase : ComponentBase
     protected void ClearNameValidationError()
     {
         _nameValidationError = null;
+    }
+
+    protected void OnFinancialStatementChanged()
+    {
+        _account.ParentId = null;
     }
 }

@@ -30,6 +30,7 @@
                        Label="Financial statement"
                        Required="true"
                        RequiredError="Financial statement is required."
+                       @bind-Value:after="OnFinancialStatementChanged"
                        Class="mt-4">
                 @foreach (var statement in Enum.GetValues<FinancialStatement>())
                 {
@@ -41,7 +42,7 @@
                        Label="Parent account"
                        Clearable="true"
                        Class="mt-4">
-                @foreach (var parent in ParentAccounts)
+                @foreach (var parent in MatchingParentAccounts)
                 {
                     <MudSelectItem T="int?" Value="@((int?)parent.Id)">@parent.Name</MudSelectItem>
                 }

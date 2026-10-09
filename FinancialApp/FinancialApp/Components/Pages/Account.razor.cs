@@ -68,7 +68,6 @@ public class AccountBase : ComponentBase
         var parameters = new DialogParameters
         {
             [nameof(CreateAccountBase.ParentAccounts)] = Accounts
-                .Where(account => !account.IsSystem)
                 .OrderBy(account => account.Name)
                 .ToList()
         };

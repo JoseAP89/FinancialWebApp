@@ -1,3 +1,5 @@
+- Check if the add account works
+- Research if when creating an account the equity accounts should or should not be filtered out
 - Create functionality to keep savings in personalized accounts, like Bonds, Nu saving account and so on. This
 	would require the functionality to create a new account for the user.
 	The delete functionality for a saving account should warn the user that if that account has money then the account will breaking

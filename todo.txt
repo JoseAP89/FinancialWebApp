@@ -2,6 +2,7 @@
     - Add a way to track auto-balance entry transaction lines with the transaction lines that generated them
 	- Allow User Override¿?
 	  Let users choose which account to balance against, Store their choice explicitly
+- Add the update functionality to transactions and transaction lines
 - Research if when creating an account the equity accounts should or should not be filtered out
 - Create functionality to keep savings in personalized accounts, like Bonds, Nu saving account and so on. This
 	would require the functionality to create a new account for the user.

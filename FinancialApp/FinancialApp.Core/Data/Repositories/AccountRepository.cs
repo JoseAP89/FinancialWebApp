@@ -224,6 +224,12 @@ namespace FinancialApp.Core.Data.Repositories
                     throw new InvalidOperationException($"The parent account with id {parentId.Value} does not exist. The account cannot be updated");
                 }
 
+                // A system account must not be selectable as a parent.
+                if (parent.IsSystem)
+                {
+                    throw new InvalidOperationException("The parent account chosen is not valid, please choose another one");
+                }
+
                 if (parent.FinancialStatement != financialStatement)
                 {
                     throw new InvalidOperationException($"The parent account {parent.Name} belongs to a different financial statement. The account cannot be updated");

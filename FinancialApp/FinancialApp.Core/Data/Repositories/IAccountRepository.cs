@@ -24,7 +24,7 @@ namespace FinancialApp.Core.Data.Repositories
         // Throws an InvalidOperationException (mirroring DeleteAccountByIdAsync) when the account does not
         // exist, when transaction lines reference it, when it has child accounts, when the name is empty or
         // already used by another account, or when the parent account is invalid (missing, the account
-        // itself or from a different financial statement).
+        // itself, a system account or from a different financial statement).
         Task UpdateAccountByIdAsync(int id, string name, string description, FinancialStatement financialStatement, int? parentId);
     }
 }

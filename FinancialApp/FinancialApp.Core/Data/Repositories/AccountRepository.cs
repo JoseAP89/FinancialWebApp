@@ -148,6 +148,16 @@ namespace FinancialApp.Core.Data.Repositories
                 throw new InvalidOperationException("The account has transaction lines associated with it. It cannot be deleted");
             }
 
+            // An account that is the parent of one or more other accounts cannot be deleted, otherwise
+            // those children would be orphaned.
+            var hasChildren = await _context.Accounts
+                .AnyAsync(a => a.ParentId == id);
+
+            if (hasChildren)
+            {
+                throw new InvalidOperationException($"The account {account.Name} has children accounts. It cannot be deleted");
+            }
+
             Remove(account);
             await SaveChangesAsync();
         }

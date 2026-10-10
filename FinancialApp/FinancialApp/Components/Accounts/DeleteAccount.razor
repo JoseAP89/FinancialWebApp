@@ -1,0 +1,13 @@
+@inherits DeleteAccountBase
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.body1">
+            Are you sure you want to delete the account @(AccountName)? It will be permanently deleted
+        </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Color="Color.Default">Cancel</MudButton>
+        <MudButton OnClick="ConfirmDelete" Color="Color.Error" Variant="Variant.Filled">Delete</MudButton>
+    </DialogActions>
+</MudDialog>

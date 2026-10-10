@@ -100,4 +100,47 @@ public class AccountBase : ComponentBase
             Snackbar.Add("Unable to create the account. Please try again.", Severity.Error);
         }
     }
+
+    protected async Task OpenDeleteAccountDialogAsync(AccountModel account)
+    {
+        var parameters = new DialogParameters
+        {
+            [nameof(DeleteAccountBase.Account)] = account
+        };
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        };
+
+        var dialog = await DialogService.ShowAsync<DeleteAccount>("Delete account", parameters, options);
+        var result = await dialog.Result;
+
+        // The user cancelled the operation (Cancel button, Escape key or clicking away).
+        if (result is null || result.Canceled)
+        {
+            return;
+        }
+
+        try
+        {
+            await AccountRepository.DeleteAccountByIdAsync(account.Id);
+
+            Accounts = Accounts
+                .Where(existingAccount => existingAccount.Id != account.Id)
+                .ToList();
+
+            Snackbar.Add($"Account {account.Name} was deleted successfully", Severity.Success);
+        }
+        catch (InvalidOperationException exception)
+        {
+            // The account could not be deleted because it still has transaction lines associated with it.
+            Snackbar.Add(exception.Message, Severity.Error);
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Failed to delete account with id {AccountId}.", account.Id);
+            Snackbar.Add("Unable to delete the account. Please try again.", Severity.Error);
+        }
+    }
 }

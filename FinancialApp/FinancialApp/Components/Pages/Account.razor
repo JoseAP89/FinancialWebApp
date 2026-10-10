@@ -79,6 +79,7 @@
                                        Size="Size.Small"
                                        Color="Color.Error"
                                        Disabled="@context.IsSystem"
+                                       OnClick="@(() => OpenDeleteAccountDialogAsync(context))"
                                        aria-label="Delete account" />
                     </div>
                 </MudTd>

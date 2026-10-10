@@ -101,6 +101,70 @@ public class AccountBase : ComponentBase
         }
     }
 
+    protected async Task OpenEditAccountDialogAsync(AccountModel account)
+    {
+        var parameters = new DialogParameters
+        {
+            [nameof(EditAccountBase.Account)] = account,
+            [nameof(EditAccountBase.ParentAccounts)] = Accounts
+                .OrderBy(existingAccount => existingAccount.Name)
+                .ToList()
+        };
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        };
+
+        var dialog = await DialogService.ShowAsync<EditAccount>("Edit account", parameters, options);
+        var result = await dialog.Result;
+
+        // The user cancelled the operation, did not change anything, or closed the dialog.
+        if (result is null || result.Canceled || result.Data is not AccountModel updatedAccount)
+        {
+            return;
+        }
+
+        try
+        {
+            await AccountRepository.UpdateAccountByIdAsync(
+                account.Id,
+                updatedAccount.Name,
+                updatedAccount.Description,
+                updatedAccount.FinancialStatement,
+                updatedAccount.ParentId);
+
+            var refreshedAccount = new AccountModel
+            {
+                Id = account.Id,
+                Name = updatedAccount.Name,
+                Description = updatedAccount.Description,
+                FinancialStatement = updatedAccount.FinancialStatement,
+                ParentId = updatedAccount.ParentId,
+                CreatedAt = account.CreatedAt,
+                IsSystem = account.IsSystem
+            };
+
+            Accounts = Accounts
+                .Select(existingAccount => existingAccount.Id == account.Id ? refreshedAccount : existingAccount)
+                .OrderBy(existingAccount => existingAccount.Name)
+                .ToList();
+
+            Snackbar.Add($"Account {refreshedAccount.Name} was updated successfully", Severity.Success);
+        }
+        catch (InvalidOperationException exception)
+        {
+            // The account could not be updated because it breaks one of the account rules
+            // (it has transaction lines or children accounts, a duplicate name, or an invalid parent).
+            Snackbar.Add(exception.Message, Severity.Error);
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Failed to update account with id {AccountId}.", account.Id);
+            Snackbar.Add("Unable to update the account. Please try again.", Severity.Error);
+        }
+    }
+
     protected async Task OpenDeleteAccountDialogAsync(AccountModel account)
     {
         var parameters = new DialogParameters

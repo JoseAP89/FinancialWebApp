@@ -74,6 +74,7 @@
                                        Size="Size.Small"
                                        Color="Color.Primary"
                                        Disabled="@context.IsSystem"
+                                       OnClick="@(() => OpenEditAccountDialogAsync(context))"
                                        aria-label="Edit account" />
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                        Size="Size.Small"

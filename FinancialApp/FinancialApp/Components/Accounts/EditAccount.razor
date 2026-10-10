@@ -1,0 +1,57 @@
+@inherits EditAccountBase
+@using FinancialApp.Data.Models
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" Model="_account">
+            <MudTextField T="string"
+                          @bind-Value="_account.Name"
+                          For="@(() => _account.Name)"
+                          Label="Name"
+                          Required="true"
+                          RequiredError="Name is required."
+                          MaxLength="200"
+                          Counter="200"
+                          Immediate="true" />
+            <MudTextField T="string"
+                          @bind-Value="_account.Description"
+                          For="@(() => _account.Description)"
+                          Label="Description"
+                          Required="true"
+                          RequiredError="Description is required."
+                          Lines="3"
+                          Immediate="true"
+                          Class="mt-4" />
+            <MudSelect T="FinancialStatement"
+                       @bind-Value="_account.FinancialStatement"
+                       For="@(() => _account.FinancialStatement)"
+                       Label="Financial statement"
+                       Required="true"
+                       RequiredError="Financial statement is required."
+                       @bind-Value:after="OnFinancialStatementChanged"
+                       Class="mt-4">
+                @foreach (var statement in Enum.GetValues<FinancialStatement>())
+                {
+                    <MudSelectItem Value="@statement">@statement</MudSelectItem>
+                }
+            </MudSelect>
+            <MudSelect T="int?"
+                       @bind-Value="_account.ParentId"
+                       Label="Parent account"
+                       Clearable="true"
+                       Class="mt-4">
+                @foreach (var parent in MatchingParentAccounts)
+                {
+                    <MudSelectItem T="int?" Value="@((int?)parent.Id)">@parent.Name</MudSelectItem>
+                }
+            </MudSelect>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Color="Color.Default">Cancel</MudButton>
+        <MudButton OnClick="SubmitAsync"
+                   Color="Color.Success"
+                   Variant="Variant.Filled"
+                   Disabled="@(!CanUpdate)">Update</MudButton>
+    </DialogActions>
+</MudDialog>

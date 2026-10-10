@@ -20,5 +20,11 @@ namespace FinancialApp.Core.Data.Repositories
         // are associated with the account (auto-balance created lines cannot currently be linked back to
         // their originating lines) or when the account has child accounts.
         Task DeleteAccountByIdAsync(int id);
+        // Updates the name, description, financial statement and parent of the account with the given id.
+        // Throws an InvalidOperationException (mirroring DeleteAccountByIdAsync) when the account does not
+        // exist, when transaction lines reference it, when it has child accounts, when the name is empty or
+        // already used by another account, or when the parent account is invalid (missing, the account
+        // itself or from a different financial statement).
+        Task UpdateAccountByIdAsync(int id, string name, string description, FinancialStatement financialStatement, int? parentId);
     }
 }

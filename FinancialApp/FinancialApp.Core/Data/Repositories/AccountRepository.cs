@@ -161,6 +161,82 @@ namespace FinancialApp.Core.Data.Repositories
             Remove(account);
             await SaveChangesAsync();
         }
+
+        public async Task UpdateAccountByIdAsync(int id, string name, string description, FinancialStatement financialStatement, int? parentId)
+        {
+            var account = await _dbSet.FindAsync(id);
+
+            // The account must exist for it to be updated.
+            if (account is null)
+            {
+                throw new InvalidOperationException($"The account with id {id} does not exist. It cannot be updated");
+            }
+
+            // An account that is the parent of one or more other accounts cannot be updated, otherwise
+            // its children would be left with an invalid hierarchy.
+            var hasChildren = await _dbSet.AnyAsync(a => a.ParentId == id);
+
+            if (hasChildren)
+            {
+                throw new InvalidOperationException($"The account {account.Name} has children accounts. It cannot be updated");
+            }
+
+            // An account cannot be updated while transaction lines reference it. There is currently no way
+            // to link an auto-balance created transaction line back to the lines that produced it, so the
+            // associated lines cannot be safely realigned automatically.
+            var hasTransactionLines = await _context.TransactionLines
+                .AnyAsync(tl => tl.AccountId == id);
+
+            if (hasTransactionLines)
+            {
+                throw new InvalidOperationException($"The account {account.Name} has transaction lines associated with it. It cannot be updated");
+            }
+
+            var normalizedName = name?.Trim() ?? string.Empty;
+
+            if (string.IsNullOrWhiteSpace(normalizedName))
+            {
+                throw new InvalidOperationException("The account name cannot be empty. It cannot be updated");
+            }
+
+            // The name must stay unique across accounts, mirroring the validation applied when creating one.
+            var hasDuplicateName = await _dbSet
+                .AnyAsync(a => a.Id != id && a.Name != null && a.Name.ToUpper() == normalizedName.ToUpper());
+
+            if (hasDuplicateName)
+            {
+                throw new InvalidOperationException($"An account with the name {normalizedName} already exists");
+            }
+
+            // The parent (when provided) must be a valid account that is not the account itself and belongs
+            // to the same financial statement as the account.
+            if (parentId.HasValue)
+            {
+                if (parentId.Value == id)
+                {
+                    throw new InvalidOperationException($"The account {account.Name} cannot be its own parent");
+                }
+
+                var parent = await _dbSet.FindAsync(parentId.Value);
+
+                if (parent is null)
+                {
+                    throw new InvalidOperationException($"The parent account with id {parentId.Value} does not exist. The account cannot be updated");
+                }
+
+                if (parent.FinancialStatement != financialStatement)
+                {
+                    throw new InvalidOperationException($"The parent account {parent.Name} belongs to a different financial statement. The account cannot be updated");
+                }
+            }
+
+            account.Name = normalizedName;
+            account.Description = description;
+            account.FinancialStatement = financialStatement;
+            account.ParentId = parentId;
+
+            await SaveChangesAsync();
+        }
     }
 
 }

@@ -126,6 +126,31 @@ namespace FinancialApp.Core.Data.Repositories
             var total = await tlQuery.SumAsync(tl => tl.Amount * tl.Quantity);
             return total;
         }
+
+        public async Task DeleteAccountByIdAsync(int id)
+        {
+            var account = await _dbSet.FindAsync(id);
+
+            // Nothing to delete when the account does not exist.
+            if (account is null)
+            {
+                return;
+            }
+
+            // An account cannot be deleted while transaction lines reference it. There is currently
+            // no way to link an auto-balance created transaction line back to the lines that produced
+            // it, so the associated lines cannot be safely removed/realigned automatically.
+            var hasTransactionLines = await _context.TransactionLines
+                .AnyAsync(tl => tl.AccountId == id);
+
+            if (hasTransactionLines)
+            {
+                throw new InvalidOperationException("The account has transaction lines associated with it. It cannot be deleted");
+            }
+
+            Remove(account);
+            await SaveChangesAsync();
+        }
     }
 
 }

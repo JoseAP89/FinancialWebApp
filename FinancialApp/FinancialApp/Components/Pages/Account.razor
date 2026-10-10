@@ -59,6 +59,7 @@
                 <MudTh>Financial Statement</MudTh>
                 <MudTh>Parent ID</MudTh>
                 <MudTh>Created at</MudTh>
+                <MudTh>Actions</MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="ID">@context.Id</MudTd>
@@ -67,6 +68,18 @@
                 <MudTd DataLabel="Financial Statement">@context.FinancialStatement</MudTd>
                 <MudTd DataLabel="Parent ID">@(context.ParentId?.ToString() ?? "—")</MudTd>
                 <MudTd DataLabel="Created at">@context.CreatedAt.ToLocalTime().ToString("MMM d, yyyy HH:mm")</MudTd>
+                <MudTd DataLabel="Actions">
+                    <div class="account-actions">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Size="Size.Small"
+                                       Color="Color.Primary"
+                                       aria-label="Edit account" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Size="Size.Small"
+                                       Color="Color.Error"
+                                       aria-label="Delete account" />
+                    </div>
+                </MudTd>
             </RowTemplate>
             <NoRecordsContent>
                 <MudText Class="account-empty">No matching accounts found.</MudText>

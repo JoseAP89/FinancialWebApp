@@ -41,6 +41,12 @@
     text-align: center;
 }
 
+.account-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
 @media (max-width: 600px) {
     .account-page {
         padding: 1rem 0.5rem;

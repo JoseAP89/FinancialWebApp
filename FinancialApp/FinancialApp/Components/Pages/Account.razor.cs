@@ -1,6 +1,7 @@
 using FinancialApp.Core.Data.Repositories;
 using AccountModel = FinancialApp.Data.Models.Account;
 using FinancialApp.Components.Accounts;
+using FinancialApp.Infrastructure.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using MudBlazor;
@@ -19,7 +20,7 @@ public class AccountBase : ComponentBase
     protected IDialogService DialogService { get; set; } = null!;
 
     [Inject]
-    protected ISnackbar Snackbar { get; set; } = null!;
+    protected IToastService ToastService { get; set; } = null!;
 
     protected IReadOnlyList<AccountModel> Accounts { get; private set; } = [];
     protected string SearchString { get; private set; } = string.Empty;
@@ -97,7 +98,7 @@ public class AccountBase : ComponentBase
         catch (Exception exception)
         {
             Logger.LogError(exception, "Failed to create an account.");
-            Snackbar.Add("Unable to create the account. Please try again.", Severity.Error);
+            ToastService.ShowError("Unable to create the account. Please try again.");
         }
     }
 
@@ -150,18 +151,18 @@ public class AccountBase : ComponentBase
                 .OrderBy(existingAccount => existingAccount.Name)
                 .ToList();
 
-            Snackbar.Add($"Account {refreshedAccount.Name} was updated successfully", Severity.Success);
+            ToastService.ShowSuccess($"Account {refreshedAccount.Name} was updated successfully");
         }
         catch (InvalidOperationException exception)
         {
             // The account could not be updated because it breaks one of the account rules
             // (it has transaction lines or children accounts, a duplicate name, or an invalid parent).
-            Snackbar.Add(exception.Message, Severity.Error);
+            ToastService.ShowError(exception.Message);
         }
         catch (Exception exception)
         {
             Logger.LogError(exception, "Failed to update account with id {AccountId}.", account.Id);
-            Snackbar.Add("Unable to update the account. Please try again.", Severity.Error);
+            ToastService.ShowError("Unable to update the account. Please try again.");
         }
     }
 
@@ -194,17 +195,17 @@ public class AccountBase : ComponentBase
                 .Where(existingAccount => existingAccount.Id != account.Id)
                 .ToList();
 
-            Snackbar.Add($"Account {account.Name} was deleted successfully", Severity.Success);
+            ToastService.ShowSuccess($"Account {account.Name} was deleted successfully");
         }
         catch (InvalidOperationException exception)
         {
             // The account could not be deleted because it still has transaction lines associated with it.
-            Snackbar.Add(exception.Message, Severity.Error);
+            ToastService.ShowError(exception.Message);
         }
         catch (Exception exception)
         {
             Logger.LogError(exception, "Failed to delete account with id {AccountId}.", account.Id);
-            Snackbar.Add("Unable to delete the account. Please try again.", Severity.Error);
+            ToastService.ShowError("Unable to delete the account. Please try again.");
         }
     }
 }

@@ -19,7 +19,8 @@ builder.Services.AddDbContext<FinancialDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Register your Core services (Server-side)
-builder.Services.AddSingleton<IToastService, ToastService>();
+// The toast service renders MudBlazor snackbars, so it follows the (scoped) lifetime of ISnackbar.
+builder.Services.AddScoped<IToastService, ToastService>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<ITransactionLineRepository, TransactionLineRepository>();

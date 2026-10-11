@@ -401,7 +401,7 @@ namespace FinancialApp.Components.Pages
 
                 Logger?.LogDebug("CreateTransaction: persisted transaction {TransactionId} with {LineCount} line(s).", tx.Id, TransactionLines.Count);
 
-                // Show success toast (JS alert fallback)
+                // Show a success toast through the toast service
                 ToastService.ShowSuccess("Transaction added successfully");
                 ClearTransactionPageState();
             }

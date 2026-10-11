@@ -29,10 +29,11 @@ namespace FinancialApp.Components.Pages
         protected ITransactionRepository TransactionRepository { get; set; } = null!;
 
         [Inject]
+        protected ITransactionLineRepository TransactionLineRepository { get; set; } = null!;
+
+        [Inject]
         protected IToastService ToastService { get; set; } = null!;
 
-
-        private AccountModel CreditCard { get; set; } = null!;
 
         protected List<AccountModel> ParentAccounts { get; set; } = [];
 
@@ -49,7 +50,6 @@ namespace FinancialApp.Components.Pages
             IsLoading = true;
             try
             {
-                CreditCard = await AccountRepository.GetByNameAsync("Credit Card") ?? new AccountModel();
                 var parents = await AccountRepository.GetVisibleParentAccountsAsync();
                 ParentAccounts = parents?.ToList() ?? new List<AccountModel>();
             }
@@ -340,32 +340,15 @@ namespace FinancialApp.Components.Pages
             }
         }
 
-        // Helper: map current UI inputs into a Transaction model
-        protected Transaction BuildTransactionFromInputs()
+        // Helper: map the transaction header inputs into a Transaction model. The lines are not part of
+        // this graph: they are inserted one by one once the id and the auto-balance lineage are known.
+        protected Transaction BuildTransactionHeader()
         {
-            var tx = new Transaction
+            return new Transaction
             {
                 Description = TransactionDescription,
-                Date = DateTime.UtcNow,
-                TransactionLines = []
+                Date = DateTime.UtcNow
             };
-
-            foreach (TransactionLineDTO line in TransactionLines)
-            {
-                if (line.SelectedChildId.HasValue && Math.Abs(line.Amount) > 0.01m)
-                {
-                    tx.TransactionLines.Add(new TransactionLine
-                    {
-                        AccountId = line.SelectedChildId.Value,
-                        Amount = line.Amount,
-                        Description = line.Description,
-                        Quantity = line.Quantity,
-                        IsAutoBalanced = line.IsAutoBalanced
-                    });
-                }
-            }
-
-            return tx;
         }
 
 
@@ -379,38 +362,57 @@ namespace FinancialApp.Components.Pages
                 Logger?.LogWarning("CreateTransaction aborted: validation failed. Errors: {Errors}", string.Join("; ", GetValidationErrors()));
                 return;
             }
-            try
-            {
-                TransactionLines = await TransactionBalancingService.BalanceTransactionAsync(TransactionLines, Logger);
-            }
-            catch (ArgumentException e)
-            {
-                ToastService.ShowError(e.Message);
-                return;
-            }
-            catch (Exception)
-            {
-                ToastService.ShowError("Balance transaction operation failed");
-                return;
-            }
-            var tx = BuildTransactionFromInputs();
-            Logger?.LogDebug("CreateTransaction debug: {@Transaction}", tx);
+
+            // The header goes in first: the compensating entries written by the balancing service and the
+            // user lines both need a real TransactionId before they can be persisted.
+            var tx = BuildTransactionHeader();
 
             try
             {
                 IsLoading = true;
 
-                // Persist transaction (EF will cascade insert TransactionLines attached to the Transaction)
                 await TransactionRepository.AddAsync(tx);
                 await TransactionRepository.SaveChangesAsync();
+
+                // Auto-balance: this persists the compensating entries against the new transaction and
+                // records on each compensated line the real database id of the entry that offsets it.
+                TransactionLines = await TransactionBalancingService.BalanceTransactionAsync(tx.Id, TransactionLines, Logger);
+
+                // Persist the user lines against that transaction, carrying the auto-balance lineage.
+                foreach (TransactionLineDTO line in TransactionLines)
+                {
+                    if (!line.SelectedChildId.HasValue || Math.Abs(line.Amount) <= 0.01m)
+                    {
+                        continue;
+                    }
+
+                    await TransactionLineRepository.AddAsync(new TransactionLine
+                    {
+                        TransactionId = tx.Id,
+                        AccountId = line.SelectedChildId.Value,
+                        Amount = line.Amount,
+                        Description = line.Description,
+                        Quantity = line.Quantity,
+                        AutoBalancedByLineId = line.AutoBalancedByLineId
+                    });
+                }
+
+                await TransactionLineRepository.SaveChangesAsync();
+
+                Logger?.LogDebug("CreateTransaction: persisted transaction {TransactionId} with {LineCount} line(s).", tx.Id, TransactionLines.Count);
 
                 // Show success toast (JS alert fallback)
                 ToastService.ShowSuccess("Transaction added successfully");
                 ClearTransactionPageState();
-
+            }
+            catch (ArgumentException e)
+            {
+                await DiscardTransactionAsync(tx);
+                ToastService.ShowError(e.Message);
             }
             catch (Exception ex)
             {
+                await DiscardTransactionAsync(tx);
                 Logger?.LogError(ex, "CreateTransaction failed while saving transaction.");
                 ToastService.ShowError("Failed to add transaction");
             }
@@ -418,6 +420,26 @@ namespace FinancialApp.Components.Pages
             {
                 IsLoading = false;
                 await InvokeAsync(StateHasChanged);
+            }
+        }
+
+        // Discards the transaction header (and, by cascade, every auto-balance entry and line written
+        // against it) when balancing or a line insert fails, so a rejected submit leaves nothing behind.
+        private async Task DiscardTransactionAsync(Transaction tx)
+        {
+            try
+            {
+                if (tx.Id == 0)
+                {
+                    return;
+                }
+
+                TransactionRepository.Remove(tx);
+                await TransactionRepository.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger?.LogError(ex, "CreateTransaction failed to roll back transaction id {TransactionId}.", tx.Id);
             }
         }
 

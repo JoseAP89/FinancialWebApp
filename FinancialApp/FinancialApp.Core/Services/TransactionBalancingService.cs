@@ -11,19 +11,30 @@ namespace FinancialApp.Core.Services;
 
 public class TransactionBalancingService: ITransactionBalancingService
 {
-    private readonly IAccountRepository _accountRepository;
+    // Description stamped on every compensating line this service persists: the row whose
+    // AutoBalancedByLineId stays NULL while the lines it offsets point back at it.
+    private const string AutoBalanceDescription = "Auto-balance entry";
 
-    public TransactionBalancingService(IAccountRepository accountRepository)
+    private readonly IAccountRepository _accountRepository;
+    private readonly ITransactionLineRepository _transactionLineRepository;
+
+    public TransactionBalancingService(
+        IAccountRepository accountRepository,
+        ITransactionLineRepository transactionLineRepository)
     {
         _accountRepository = accountRepository;
+        _transactionLineRepository = transactionLineRepository;
     }
 
     // Auto-balance a transaction similar to the provided python implementation:
     // - Calculate current balance using account FinancialStatement:
     //   ASSET and EXPENSE contribute as debits (+), LIABILITY/EQUITY/REVENUE as credits (-)
-    // - If the absolute balance > 0.01, find a cash/bank ASSET account and append a
-    //   compensating TransactionLine with Amount = -balance and Description = "Auto-balance entry".
+    // - If the absolute balance > 0.01, find a cash/bank ASSET account and persist a compensating
+    //   TransactionLine with Amount = -balance and Description = "Auto-balance entry".
+    // The transaction must already exist: every compensating entry is inserted on the spot so its real
+    // id can be handed to the lines it balances (TransactionLine.AutoBalancedByLineId).
     public async Task<List<TransactionLineDTO>> BalanceTransactionAsync(
+        int transactionId,
         List<TransactionLineDTO> transactionLines,
         ILogger logger = null!)
     {
@@ -81,7 +92,7 @@ public class TransactionBalancingService: ITransactionBalancingService
         // Add compensating entries if needed
         if (Math.Abs(debit) > 0.01m || Math.Abs(credit) > 0.01m)
         {
-            await AddCompensatingEntriesAsync(transactionLines, debit, credit, logger);
+            await AddCompensatingEntriesAsync(transactionId, transactionLines, debit, credit, logger);
         }
 
         return transactionLines;
@@ -101,10 +112,11 @@ public class TransactionBalancingService: ITransactionBalancingService
     }
 
     private async Task AddCompensatingEntriesAsync(
+        int transactionId,
         List<TransactionLineDTO> transactionLines,
         decimal debit,
         decimal credit,
-        ILogger logger)
+        ILogger? logger)
     {
         if (Math.Abs(debit) > 0.01m)
         {
@@ -116,17 +128,24 @@ public class TransactionBalancingService: ITransactionBalancingService
             }
 
             var balance = decimal.Round(-debit, 2, MidpointRounding.ToEven);
-            transactionLines.Add(new TransactionLineDTO
-            {
-                SelectedChildId = checkAccount.Id,
-                Amount = balance,
-                Description = "Auto-balance entry",
-                IsAutoBalanced = true,
-                Quantity = 1
-            });
 
-            logger?.LogInformation("BalanceTransaction: added auto-balance line to account id {AccountId} amount {Amount}.",
-                checkAccount.Id, balance);
+            // Save the entry first: the lines it compensates can only reference it once it has an id.
+            var entry = new TransactionLine
+            {
+                TransactionId = transactionId,
+                AccountId = checkAccount.Id,
+                Amount = balance,
+                Description = AutoBalanceDescription,
+                Quantity = 1
+            };
+            await _transactionLineRepository.AddAsync(entry);
+            await _transactionLineRepository.SaveChangesAsync();
+
+            // The debit imbalance comes from the lines not flagged as paid with a credit card.
+            LinkAutoBalancedByEntry(transactionLines, entry.Id, paidWithCreditCard: false);
+
+            logger?.LogInformation("BalanceTransaction: added auto-balance line id {LineId} to account id {AccountId} amount {Amount}.",
+                entry.Id, checkAccount.Id, balance);
         }
 
         if (Math.Abs(credit) > 0.01m)
@@ -139,17 +158,41 @@ public class TransactionBalancingService: ITransactionBalancingService
             }
 
             var balance = decimal.Round(-credit, 2, MidpointRounding.ToEven);
-            transactionLines.Add(new TransactionLineDTO
-            {
-                SelectedChildId = creditCardAccount.Id,
-                Amount = balance,
-                Description = "Auto-balance entry",
-                IsAutoBalanced = true,
-                Quantity = 1
-            });
 
-            logger?.LogInformation("BalanceTransaction: added auto-balance line to account id {AccountId} amount {Amount}.",
-                creditCardAccount.Id, balance);
+            // Save the entry first: the lines it compensates can only reference it once it has an id.
+            var entry = new TransactionLine
+            {
+                TransactionId = transactionId,
+                AccountId = creditCardAccount.Id,
+                Amount = balance,
+                Description = AutoBalanceDescription,
+                Quantity = 1
+            };
+            await _transactionLineRepository.AddAsync(entry);
+            await _transactionLineRepository.SaveChangesAsync();
+
+            // The credit imbalance comes from the lines flagged as paid with a credit card.
+            LinkAutoBalancedByEntry(transactionLines, entry.Id, paidWithCreditCard: true);
+
+            logger?.LogInformation("BalanceTransaction: added auto-balance line id {LineId} to account id {AccountId} amount {Amount}.",
+                entry.Id, creditCardAccount.Id, balance);
+        }
+    }
+
+    // Records on every compensated line the database id of the auto-balance entry that offsets it, so
+    // the lineage can be written together with the lines themselves. The split mirrors the imbalance
+    // calculation in BalanceTransactionAsync: PaidWithCreditCard lines form the credit group, every
+    // other line the debit group, and only lines that took part in that calculation (they have a
+    // SelectedChild) are linked. A line whose group imbalance cancelled out gets no entry (NULL).
+    private static void LinkAutoBalancedByEntry(
+        List<TransactionLineDTO> transactionLines,
+        int autoBalanceLineId,
+        bool paidWithCreditCard)
+    {
+        foreach (TransactionLineDTO line in transactionLines.Where(l =>
+                     l.PaidWithCreditCard == paidWithCreditCard && l.SelectedChild is not null))
+        {
+            line.AutoBalancedByLineId = autoBalanceLineId;
         }
     }
 

@@ -23,6 +23,8 @@ public class AccountBase : ComponentBase
     protected IToastService ToastService { get; set; } = null!;
 
     protected IReadOnlyList<AccountModel> Accounts { get; private set; } = [];
+    protected IReadOnlyDictionary<int, int> TransactionLineCounts { get; private set; } =
+        new Dictionary<int, int>();
     protected string SearchString { get; private set; } = string.Empty;
     protected bool IsLoading { get; private set; }
     protected string? ErrorMessage { get; private set; }
@@ -47,6 +49,8 @@ public class AccountBase : ComponentBase
             Accounts = (await AccountRepository.ListAsync())
                 .OrderBy(account => account.Name)
                 .ToList();
+
+            TransactionLineCounts = await LoadTransactionLineCountsAsync(Accounts);
         }
         catch (Exception exception)
         {
@@ -57,6 +61,24 @@ public class AccountBase : ComponentBase
         {
             IsLoading = false;
         }
+    }
+
+    protected int GetTransactionLineCount(int accountId)
+    {
+        // Accounts without an entry (for example a newly created one) have no transaction lines.
+        return TransactionLineCounts.TryGetValue(accountId, out var count) ? count : 0;
+    }
+
+    private async Task<IReadOnlyDictionary<int, int>> LoadTransactionLineCountsAsync(IEnumerable<AccountModel> accounts)
+    {
+        var counts = new Dictionary<int, int>();
+
+        foreach (var account in accounts)
+        {
+            counts[account.Id] = await AccountRepository.GetTransactionLineCountByAccountIdAsync(account.Id);
+        }
+
+        return counts;
     }
 
     protected void OnSearchChanged(string? searchString)
@@ -94,6 +116,12 @@ public class AccountBase : ComponentBase
                 .Append(account)
                 .OrderBy(existingAccount => existingAccount.Name)
                 .ToList();
+
+            // A freshly created account cannot have transaction lines yet.
+            TransactionLineCounts = new Dictionary<int, int>(TransactionLineCounts)
+            {
+                [account.Id] = 0
+            };
         }
         catch (Exception exception)
         {
@@ -194,6 +222,10 @@ public class AccountBase : ComponentBase
             Accounts = Accounts
                 .Where(existingAccount => existingAccount.Id != account.Id)
                 .ToList();
+
+            TransactionLineCounts = TransactionLineCounts
+                .Where(pair => pair.Key != account.Id)
+                .ToDictionary(pair => pair.Key, pair => pair.Value);
 
             ToastService.ShowSuccess($"Account {account.Name} was deleted successfully");
         }

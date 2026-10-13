@@ -127,6 +127,15 @@ namespace FinancialApp.Core.Data.Repositories
             return total;
         }
 
+        public async Task<int> GetTransactionLineCountByAccountIdAsync(int accountId)
+        {
+            // Count the transaction lines referencing the account. CountAsync returns 0 when the
+            // account has no transaction lines, so no extra null/empty handling is required.
+            return await _context.TransactionLines
+                .AsNoTracking()
+                .CountAsync(tl => tl.AccountId == accountId);
+        }
+
         public async Task DeleteAccountByIdAsync(int id)
         {
             var account = await _dbSet.FindAsync(id);

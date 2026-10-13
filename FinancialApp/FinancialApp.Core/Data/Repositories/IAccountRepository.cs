@@ -15,6 +15,9 @@ namespace FinancialApp.Core.Data.Repositories
         // Returns the total amount for the given account including its descendant accounts.
         // beginDate and endDate are optional; when provided they filter by Transaction.Date (inclusive start, exclusive end + 1 day).
         Task<decimal> GetAccountTotalAsync(int accountId, DateOnly? beginDate = null, DateOnly? endDate = null, bool includeChildren = false);
+        // Returns the total number of transaction lines that reference the given account. Returns 0 when
+        // the account has no transaction lines associated with it.
+        Task<int> GetTransactionLineCountByAccountIdAsync(int accountId);
         // Deletes the account with the given id only when no transaction lines reference it and no other
         // account references it as its parent. Throws an InvalidOperationException when transaction lines
         // are associated with the account (auto-balance created lines cannot currently be linked back to

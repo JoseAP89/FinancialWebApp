@@ -58,6 +58,7 @@
                 <MudTh>Description</MudTh>
                 <MudTh>Financial Statement</MudTh>
                 <MudTh>Parent ID</MudTh>
+                <MudTh># of lines</MudTh>
                 <MudTh>Created at</MudTh>
                 <MudTh>Actions</MudTh>
             </HeaderContent>
@@ -67,6 +68,7 @@
                 <MudTd DataLabel="Description">@context.Description</MudTd>
                 <MudTd DataLabel="Financial Statement">@context.FinancialStatement</MudTd>
                 <MudTd DataLabel="Parent ID">@(context.ParentId?.ToString() ?? "—")</MudTd>
+                <MudTd DataLabel="# of lines">@GetTransactionLineCount(context.Id)</MudTd>
                 <MudTd DataLabel="Created at">@context.CreatedAt.ToLocalTime().ToString("MMM d, yyyy HH:mm")</MudTd>
                 <MudTd DataLabel="Actions">
                     <div class="account-actions">

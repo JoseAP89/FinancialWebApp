@@ -1,6 +1,7 @@
 @page "/account"
 @inherits AccountBase
 @using AccountModel = FinancialApp.Data.Models.Account
+@using FinancialApp.Data.Models
 @using FinancialApp.Components.Accounts
 @using MudBlazor
 
@@ -31,6 +32,61 @@
     }
     else
     {
+        <div class="account-filters">
+            <MudSelect T="AccountFilterMode"
+                       Value="FilterMode"
+                       ValueChanged="OnFilterModeChanged"
+                       Label="Filter"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       Class="account-filter-control">
+                <MudSelectItem Value="AccountFilterMode.None">None</MudSelectItem>
+                <MudSelectItem Value="AccountFilterMode.FinancialStatement">Financial statement</MudSelectItem>
+                <MudSelectItem Value="AccountFilterMode.NumberOfLines">Number of lines</MudSelectItem>
+            </MudSelect>
+
+            @if (FilterMode == AccountFilterMode.FinancialStatement)
+            {
+                <MudSelect T="FinancialStatement?"
+                           Value="FilterFinancialStatement"
+                           ValueChanged="OnFilterFinancialStatementChanged"
+                           Label="Financial statement"
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           Clearable="true"
+                           Class="account-filter-control">
+                    @foreach (var statement in Enum.GetValues<FinancialStatement>())
+                    {
+                        <MudSelectItem T="FinancialStatement?" Value="@((FinancialStatement?)statement)">@statement</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+            else if (FilterMode == AccountFilterMode.NumberOfLines)
+            {
+                <MudSelect T="LineCountComparison"
+                           Value="FilterLineCountComparison"
+                           ValueChanged="OnLineCountComparisonChanged"
+                           Label="Condition"
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           Class="account-filter-control">
+                    <MudSelectItem Value="LineCountComparison.GreaterThan">Greater than</MudSelectItem>
+                    <MudSelectItem Value="LineCountComparison.EqualTo">Equal to</MudSelectItem>
+                    <MudSelectItem Value="LineCountComparison.LessThan">Less than</MudSelectItem>
+                </MudSelect>
+
+                <MudNumericField T="int?"
+                                 Value="FilterLineCount"
+                                 ValueChanged="OnLineCountChanged"
+                                 Label="Number of lines"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 Min="0"
+                                 Class="account-filter-control"
+                                 aria-label="Number of lines" />
+            }
+        </div>
+
         <MudTable T="AccountModel"
                   Items="FilteredAccounts"
                   Dense="true"

@@ -60,7 +60,9 @@ public class EditTransactionBase : ComponentBase
             return;
         }
 
-        // Backend persistence is not wired up yet; only the edited values are returned to the caller.
+        // Hand the header back together with the edited lines so the caller can persist the whole edit.
+        _transaction.TransactionLines = _lines;
+
         MudDialog.Close(DialogResult.Ok(_transaction));
     }
 }

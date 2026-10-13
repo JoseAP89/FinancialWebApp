@@ -17,5 +17,10 @@ namespace FinancialApp.Core.Data.Repositories
 
         // Returns the total expenses within the given date range
         Task<decimal> GetTotalExpenses(DateOnly? start, DateOnly? end);
+
+        // Persists the header (description and server generated date) of the given transaction together
+        // with every line it carries, keeping the auto-balance entries that compensate those lines in
+        // sync. Throws an InvalidOperationException when the transaction does not exist.
+        Task UpdateTransactionWithLinesAsync(Transaction transaction);
     }
 }

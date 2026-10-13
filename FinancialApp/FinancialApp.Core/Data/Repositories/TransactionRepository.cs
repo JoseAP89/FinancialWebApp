@@ -9,8 +9,11 @@ namespace FinancialApp.Core.Data.Repositories;
 
 public class TransactionRepository : Repository<Transaction>, ITransactionRepository
 {
-    public TransactionRepository(FinancialDbContext context) : base(context)
+    private readonly ITransactionLineRepository _transactionLineRepository;
+
+    public TransactionRepository(FinancialDbContext context, ITransactionLineRepository transactionLineRepository) : base(context)
     {
+        _transactionLineRepository = transactionLineRepository;
     }
 
     public override async Task AddAsync(Transaction entity)
@@ -20,11 +23,45 @@ public class TransactionRepository : Repository<Transaction>, ITransactionReposi
         await base.AddAsync(entity);
     }
 
-    public override void Update(Transaction entity)
+    // Deliberately no Update override: editing a transaction must leave its date alone. The date the
+    // transaction happened is not something the edit dialog changes, and the moment of the edit will be
+    // carried by its own dedicated column, added in a later change.
+
+    // Persists the edit made in the "Edit transaction" dialog: the header name plus every line the dialog
+    // handed back. Each line is written through the line repository so the auto-balance entry that
+    // compensates it follows the edit and the transaction stays balanced.
+    public async Task UpdateTransactionWithLinesAsync(Transaction transaction)
     {
-        // Update the date to server local time on update
-        entity.Date = DateTime.UtcNow;
-        base.Update(entity);
+        if (transaction is null)
+        {
+            throw new ArgumentNullException(nameof(transaction));
+        }
+
+        // The stored row is updated instead of the incoming transaction: the header edit is applied to
+        // the tracked entity and the lines are only written by the loop below, so no line is flushed
+        // without its auto-balance entry being realigned first.
+        var stored = await _dbSet.FirstOrDefaultAsync(t => t.Id == transaction.Id);
+
+        if (stored is null)
+        {
+            throw new InvalidOperationException($"The transaction with id {transaction.Id} does not exist. It cannot be updated");
+        }
+
+        stored.Description = transaction.Description;
+
+        // Saved through the change tracker, the way UpdateAccountByIdAsync does it: only the edited columns
+        // are written, so the date the transaction happened keeps the value it was created with. The header
+        // goes in first, mirroring how a transaction is created, so a failure while writing a line still
+        // leaves the edited header readable.
+        await SaveChangesAsync();
+
+        if (transaction.TransactionLines is not null)
+        {
+            foreach (var line in transaction.TransactionLines)
+            {
+                await _transactionLineRepository.UpdateLineWithAutoBalanceAsync(line);
+            }
+        }
     }
 
     // Override GetByIdAsync to include TransactionLines

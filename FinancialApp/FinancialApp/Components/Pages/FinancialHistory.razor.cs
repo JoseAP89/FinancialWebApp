@@ -8,6 +8,7 @@ using FinancialApp.Data.Models;
 using FinancialApp.Core.Data.Repositories;
 using FinancialApp.Core.DTOs;
 using FinancialApp.Components.Transactions;
+using FinancialApp.Infrastructure.Services;
 using MudBlazor;
 
 namespace FinancialApp.Components.Pages
@@ -22,6 +23,9 @@ namespace FinancialApp.Components.Pages
 
         [Inject]
         protected IDialogService DialogService { get; set; } = null!;
+
+        [Inject]
+        protected IToastService ToastService { get; set; } = null!;
 
         protected IEnumerable<Transaction> FilteredTransactions { get; set; } = Enumerable.Empty<Transaction>();
 
@@ -150,8 +154,10 @@ namespace FinancialApp.Components.Pages
             return ExpandedTransactions.Contains(transactionId);
         }
 
-        // Opens the dialog that lets the user edit a transaction and its lines.
-        // Backend persistence will be wired up later; for now only the UI is updated.
+        // Opens the dialog that lets the user edit a transaction and its lines and, when the user accepts
+        // the edit, persists it through the repositories. The repositories also realign the auto-balance
+        // entries compensating the edited lines, so the range is reloaded afterwards to show what was
+        // actually stored.
         protected async Task OpenEditTransactionDialogAsync(Transaction transaction)
         {
             var parameters = new DialogParameters
@@ -164,7 +170,41 @@ namespace FinancialApp.Components.Pages
                 FullWidth = true
             };
 
-            await DialogService.ShowAsync<EditTransaction>("Edit transaction", parameters, options);
+            var dialog = await DialogService.ShowAsync<EditTransaction>("Edit transaction", parameters, options);
+            var result = await dialog.Result;
+
+            // No result, a cancelled dialog or an unexpected payload means there is nothing to persist.
+            if (result is null || result.Canceled || result.Data is not Transaction edited)
+            {
+                return;
+            }
+
+            try
+            {
+                IsLoading = true;
+
+                await TransactionRepository.UpdateTransactionWithLinesAsync(edited);
+
+                ToastService.ShowSuccess("Transaction updated successfully");
+
+                // Reload the range so the cards, the totals and the table show the stored values.
+                await ApplyFilter();
+            }
+            catch (InvalidOperationException ex)
+            {
+                Logger?.LogWarning(ex, "UpdateTransaction failed for transaction {TransactionId}.", edited.Id);
+                ToastService.ShowError(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                Logger?.LogError(ex, "UpdateTransaction failed for transaction {TransactionId}.", edited.Id);
+                ToastService.ShowError("Failed to update transaction");
+            }
+            finally
+            {
+                IsLoading = false;
+                await InvokeAsync(StateHasChanged);
+            }
         }
 
         protected TableGroupDefinition<FlatTransactionRow> TransactionGroupDefinition = new()

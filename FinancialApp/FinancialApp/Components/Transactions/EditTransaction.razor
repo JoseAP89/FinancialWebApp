@@ -1,0 +1,52 @@
+@inherits EditTransactionBase
+@using FinancialApp.Data.Models
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" Model="_transaction">
+            <MudTextField T="string"
+                          @bind-Value="_transaction.Description"
+                          For="@(() => _transaction.Description)"
+                          Label="Transaction name"
+                          Required="true"
+                          RequiredError="Transaction name is required."
+                          MaxLength="500"
+                          Counter="500"
+                          Immediate="true" />
+
+            @for (var i = 0; i < _lines.Count; i++)
+            {
+                var index = i;
+                if (index > 0)
+                {
+                    <MudDivider Class="my-4" />
+                }
+                <MudText Typo="Typo.subtitle2" Class="mb-2">Line @(index + 1)</MudText>
+                <MudTextField T="string"
+                              @bind-Value="_lines[index].Description"
+                              For="@(() => _lines[index].Description)"
+                              Label="Transaction line name"
+                              Immediate="true" />
+                <MudNumericField T="int"
+                                 @bind-Value="_lines[index].Quantity"
+                                 For="@(() => _lines[index].Quantity)"
+                                 Label="Quantity"
+                                 Min="1"
+                                 Immediate="true"
+                                 Class="mt-4" />
+                <MudNumericField T="decimal"
+                                 @bind-Value="_lines[index].Amount"
+                                 For="@(() => _lines[index].Amount)"
+                                 Label="Amount"
+                                 Immediate="true"
+                                 Class="mt-4" />
+            }
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudText Typo="Typo.body1" Style="font-weight: 700; margin-left: 14px;">Total: @TotalTransactionAmount.ToString("C")</MudText>
+        <MudSpacer />
+        <MudButton OnClick="Cancel" Color="Color.Default">Close</MudButton>
+        <MudButton OnClick="SubmitAsync" Color="Color.Success" Variant="Variant.Filled">Edit</MudButton>
+    </DialogActions>
+</MudDialog>

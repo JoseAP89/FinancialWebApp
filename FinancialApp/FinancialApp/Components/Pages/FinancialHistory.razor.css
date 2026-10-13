@@ -41,7 +41,15 @@
     font-size: 0.9em;
 }
 
-.info-icon {
+.brand-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.info-icon,
+.edit-icon {
     width: 20px;
     height: 20px;
     border-radius: 50%;
@@ -53,6 +61,14 @@
     font-weight: 600;
     cursor: pointer;
     padding: 0;
+}
+
+.edit-icon {
+    color: #1e3c5c;
+}
+
+.edit-icon:hover {
+    background: #f2ede2;
 }
 
 #history-list {

@@ -1,6 +1,7 @@
 @page "/financial-history"
 @inherits FinancialHistoryBase
 @using FinancialApp.Data.Models
+@using FinancialApp.Components.Transactions
 @using MudBlazor
 
 <div class="financial-history-page">
@@ -57,7 +58,12 @@
                         <div class="receipt-header">
                             <div class="brand">
                                 <p>@(tx.Description ?? "Transaction")</p>
-                                <button class="info-icon" @onclick="() => ToggleExpenseList(tx.Id)">@(IsExpenseListVisible(tx.Id) ? "-" : "+")</button>
+                                <div class="brand-actions">
+                                    <button class="info-icon" @onclick="() => ToggleExpenseList(tx.Id)">@(IsExpenseListVisible(tx.Id) ? "-" : "+")</button>
+                                    <button class="edit-icon" @onclick="() => OpenEditTransactionDialogAsync(tx)" aria-label="Edit transaction">
+                                        <MudIcon Icon="@Icons.Material.Filled.Edit" Style="font-size: 14px;" />
+                                    </button>
+                                </div>
                             </div>
                             <div class="sub">@tx.Date.ToLocalTime().ToString("MMM dd, yyyy HH:mm")</div>
                         </div>

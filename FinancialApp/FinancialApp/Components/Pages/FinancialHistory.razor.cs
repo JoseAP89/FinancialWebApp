@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using FinancialApp.Data.Models;
 using FinancialApp.Core.Data.Repositories;
 using FinancialApp.Core.DTOs;
+using FinancialApp.Components.Transactions;
 using MudBlazor;
 
 namespace FinancialApp.Components.Pages
@@ -18,6 +19,9 @@ namespace FinancialApp.Components.Pages
 
         [Inject]
         protected ILogger<FinancialHistoryBase> Logger { get; set; } = null!;
+
+        [Inject]
+        protected IDialogService DialogService { get; set; } = null!;
 
         protected IEnumerable<Transaction> FilteredTransactions { get; set; } = Enumerable.Empty<Transaction>();
 
@@ -144,6 +148,23 @@ namespace FinancialApp.Components.Pages
         protected bool IsExpenseListVisible(int transactionId)
         {
             return ExpandedTransactions.Contains(transactionId);
+        }
+
+        // Opens the dialog that lets the user edit a transaction and its lines.
+        // Backend persistence will be wired up later; for now only the UI is updated.
+        protected async Task OpenEditTransactionDialogAsync(Transaction transaction)
+        {
+            var parameters = new DialogParameters
+            {
+                [nameof(EditTransactionBase.Transaction)] = transaction
+            };
+            var options = new DialogOptions
+            {
+                MaxWidth = MaxWidth.Small,
+                FullWidth = true
+            };
+
+            await DialogService.ShowAsync<EditTransaction>("Edit transaction", parameters, options);
         }
 
         protected TableGroupDefinition<FlatTransactionRow> TransactionGroupDefinition = new()

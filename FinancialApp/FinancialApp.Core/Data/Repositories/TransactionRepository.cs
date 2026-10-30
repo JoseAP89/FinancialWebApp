@@ -124,6 +124,14 @@ public class TransactionRepository : Repository<Transaction>, ITransactionReposi
             .Where(t => t.Date >= startUtc && t.Date < endUtc)
             .Include(t => t.TransactionLines.Where(l => l.Account != null && !l.Account.IsSystem && l.AutoBalancedByLineId != null))
                 .ThenInclude(l => l.Account)
+            // The account of the entry that compensates each line tells how the line was paid:
+            // "Checking Account" for cash, "Credit Card" for a credit card. The entry itself is not
+            // part of the filtered collection above (its AutoBalancedByLineId is NULL), so its
+            // navigation is loaded here, repeating the same filter so both includes load the same
+            // collection of user lines.
+            .Include(t => t.TransactionLines.Where(l => l.Account != null && !l.Account.IsSystem && l.AutoBalancedByLineId != null))
+                .ThenInclude(l => l.AutoBalancedByLine!)
+                    .ThenInclude(entry => entry.Account!)
             .OrderByDescending(t => t.Date)
             .ToListAsync();
     }

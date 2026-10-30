@@ -148,6 +148,13 @@
 .mud-table-cell-custom-group {
     font-weight: 500;
 }
+
+/* Payment method icon of the history table: keeps the row height stable and the icon centered. */
+.paid-with-icon {
+    vertical-align: middle;
+    color: #1e3c5c;
+}
+
 .mud-table-cell-custom-group-footer {
     padding-bottom: 50px;
     text-align: right;

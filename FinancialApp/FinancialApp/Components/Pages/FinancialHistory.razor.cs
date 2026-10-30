@@ -279,9 +279,32 @@ namespace FinancialApp.Components.Pages
 
         protected sealed record FlatTransactionRow(Transaction Transaction, TransactionLine Line)
         {
+            // Account names the balancing service uses for the entries it stamps on the lines it
+            // compensates: the checking account for cash, the credit card account for credit cards.
+            private const string CreditCardAccountName = "Credit Card";
+            private const string CheckingAccountName = "Checking Account";
+
             public int Quantity => Line.Quantity <= 0 ? 1 : Line.Quantity;
 
             public decimal LineTotal => Line.Amount * Quantity;
+
+            // The line was paid with whatever the entry compensating it was posted against.
+            public string? PaidWithAccountName => Line.AutoBalancedByLine?.Account?.Name;
+
+            public string? PaidWithIcon => PaidWithAccountName switch
+            {
+                CreditCardAccountName => Icons.Material.Filled.CreditCard,
+                CheckingAccountName => Icons.Material.Filled.Payments,
+                _ => null
+            };
+
+            // Text alternative for the icon, so the column is still readable by a screen reader.
+            public string? PaidWithLabel => PaidWithAccountName switch
+            {
+                CreditCardAccountName => "Paid with credit card",
+                CheckingAccountName => "Paid with cash",
+                _ => null
+            };
         }
 
         private DateTime? ParseDate(string? s)

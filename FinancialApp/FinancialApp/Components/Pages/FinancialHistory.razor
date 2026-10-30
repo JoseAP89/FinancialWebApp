@@ -112,13 +112,14 @@
                           GroupFooterClass="mb-4">
                     <HeaderContent>
                         <MudTh>Description</MudTh>
+                        <MudTh>Paid with</MudTh>
                         <MudTh>Amount</MudTh>
                         <MudTh>Quantity</MudTh>
                         <MudTh>Subtotal</MudTh>
                     </HeaderContent>
 
                     <GroupHeaderTemplate>
-                        <MudTh Class="mud-table-cell-custom-group" ColSpan="5">
+                        <MudTh Class="mud-table-cell-custom-group" ColSpan="6">
                             <div class="group-header-cell">
                                 <span>@context.Items.First().Transaction.Description</span>
                                 <span>@context.Items.First().Transaction.Date.ToLocalTime().ToString("MMM d, yyyy")</span>
@@ -129,6 +130,15 @@
                     <RowTemplate>
                         <MudTd DataLabel="Line" Style="padding-left:36px">
                             @(context.Line.Description ?? "Transaction line")
+                        </MudTd>
+                        <MudTd DataLabel="Paid with">
+                            @if (!string.IsNullOrEmpty(context.PaidWithIcon))
+                            {
+                                <MudIcon Icon="@context.PaidWithIcon"
+                                         Class="paid-with-icon"
+                                         Style="font-size: 18px;"
+                                         aria-label="@context.PaidWithLabel" />
+                            }
                         </MudTd>
                         <MudTd DataLabel="Amount">
                             @context.Line.Amount.ToString("C")
@@ -142,7 +152,7 @@
                     </RowTemplate>
 
                     <GroupFooterTemplate>
-                        <MudTh Class="mud-table-cell-custom-group mud-table-cell-custom-group-footer" ColSpan="5">
+                        <MudTh Class="mud-table-cell-custom-group mud-table-cell-custom-group-footer" ColSpan="6">
                             <span class="group-total">Group total: @context.Items.Sum(row => row.LineTotal).ToString("C")</span>
                         </MudTh>
                     </GroupFooterTemplate>

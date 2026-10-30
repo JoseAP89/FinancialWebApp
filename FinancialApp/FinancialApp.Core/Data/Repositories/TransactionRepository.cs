@@ -64,6 +64,28 @@ public class TransactionRepository : Repository<Transaction>, ITransactionReposi
         }
     }
 
+    // Deletes the transaction header, and before it every line stored against it: the user lines and
+    // the auto-balance entries that compensate them. The lines are deleted through the line repository,
+    // which removes the compensated lines before the entries they point to, so the self-referencing
+    // lineage (AutoBalancedByLineId) never blocks a delete. Nothing is left to the database cascade.
+    public async Task DeleteTransactionWithLinesAsync(int id)
+    {
+        var transaction = await _dbSet.FirstOrDefaultAsync(t => t.Id == id);
+
+        // Nothing to delete when the transaction does not exist, mirroring DeleteAccountByIdAsync.
+        if (transaction is null)
+        {
+            return;
+        }
+
+        await _transactionLineRepository.DeleteLinesByTransactionIdAsync(id);
+
+        // The header goes last: the lines that reference it, and the entries they reference, are gone
+        // by now, so removing it cannot be rejected by a foreign key.
+        Remove(transaction);
+        await SaveChangesAsync();
+    }
+
     // Override GetByIdAsync to include TransactionLines
     public override async Task<Transaction?> GetByIdAsync(int id)
     {

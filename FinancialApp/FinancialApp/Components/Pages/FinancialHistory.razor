@@ -63,6 +63,9 @@
                                     <button class="edit-icon" @onclick="() => OpenEditTransactionDialogAsync(tx)" aria-label="Edit transaction">
                                         <MudIcon Icon="@Icons.Material.Filled.Edit" Style="font-size: 14px;" />
                                     </button>
+                                    <button class="delete-icon" @onclick="() => OpenDeleteTransactionDialogAsync(tx)" aria-label="Delete transaction">
+                                        <MudIcon Icon="@Icons.Material.Filled.Delete" Style="font-size: 14px;" />
+                                    </button>
                                 </div>
                             </div>
                             <div class="sub">@tx.Date.ToLocalTime().ToString("MMM dd, yyyy HH:mm")</div>

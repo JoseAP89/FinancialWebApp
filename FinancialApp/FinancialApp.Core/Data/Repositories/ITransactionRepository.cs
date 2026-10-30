@@ -22,5 +22,12 @@ namespace FinancialApp.Core.Data.Repositories
         // with every line it carries, keeping the auto-balance entries that compensate those lines in
         // sync. Throws an InvalidOperationException when the transaction does not exist.
         Task UpdateTransactionWithLinesAsync(Transaction transaction);
+
+        // Deletes the transaction header, after deleting - through the line repository - every line
+        // stored against it, the user lines as well as the auto-balance entries that compensate them.
+        // The rows are removed explicitly instead of relying on the database cascade, so the
+        // self-referencing lineage is unwound in a deterministic order. Nothing happens when the
+        // transaction does not exist, mirroring DeleteAccountByIdAsync.
+        Task DeleteTransactionWithLinesAsync(int id);
     }
 }

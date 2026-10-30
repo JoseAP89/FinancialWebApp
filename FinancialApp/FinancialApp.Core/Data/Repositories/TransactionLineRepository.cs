@@ -1,6 +1,7 @@
 using FinancialApp.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace FinancialApp.Core.Data.Repositories
@@ -83,6 +84,53 @@ namespace FinancialApp.Core.Data.Repositories
 
             await AdjustAutoBalanceEntryAsync(stored.AutoBalancedByLineId, LineValue(stored) - previousValue);
             await SaveChangesAsync();
+        }
+
+        // Deletes every line stored against the given transaction: the user lines and the auto-balance
+        // entries that compensate them. The compensated lines are removed first, because a row that
+        // holds the lineage (AutoBalancedByLineId) cannot be deleted after the entry it points to is
+        // gone, and the entries are removed once nothing references them any more. The rows are removed
+        // explicitly instead of relying on the database cascade, so the lineage is unwound in the order
+        // the self-referencing foreign key requires.
+        public async Task DeleteLinesByTransactionIdAsync(int transactionId)
+        {
+            // Every line of the transaction is read in one go: the user lines and the auto-balance
+            // entries created by the balancing service both belong to it.
+            var lines = await _dbSet
+                .Where(tl => tl.TransactionId == transactionId)
+                .ToListAsync();
+
+            if (lines.Count == 0)
+            {
+                return;
+            }
+
+            // A line pointing at an entry is a compensated (user) line; a line with no such pointer is
+            // an auto-balance entry.
+            var compensatedLines = lines.Where(tl => tl.AutoBalancedByLineId.HasValue).ToList();
+            var autoBalanceEntries = lines.Where(tl => !tl.AutoBalancedByLineId.HasValue).ToList();
+
+            // 1. The compensated lines, so the lineage they hold stops referencing the entries.
+            if (compensatedLines.Count > 0)
+            {
+                foreach (var line in compensatedLines)
+                {
+                    Remove(line);
+                }
+
+                await SaveChangesAsync();
+            }
+
+            // 2. The auto-balance entries themselves, now that no row references them.
+            if (autoBalanceEntries.Count > 0)
+            {
+                foreach (var line in autoBalanceEntries)
+                {
+                    Remove(line);
+                }
+
+                await SaveChangesAsync();
+            }
         }
 
         // Moves the auto-balance entry that compensates the given line by the inverse of the line's

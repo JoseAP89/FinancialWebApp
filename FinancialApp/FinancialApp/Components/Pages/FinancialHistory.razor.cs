@@ -207,6 +207,62 @@ namespace FinancialApp.Components.Pages
             }
         }
 
+        // Opens the confirmation dialog that lets the user delete a transaction card and, when the user
+        // confirms, deletes it through the repository. The repository removes the transaction together
+        // with every line stored against it, the user lines as well as the auto-balance entries that
+        // compensate them, so the range is reloaded afterwards to show what is actually left.
+        protected async Task OpenDeleteTransactionDialogAsync(Transaction transaction)
+        {
+            var parameters = new DialogParameters
+            {
+                [nameof(DeleteTransactionBase.Transaction)] = transaction
+            };
+            var options = new DialogOptions
+            {
+                MaxWidth = MaxWidth.Small,
+                FullWidth = true
+            };
+
+            var dialog = await DialogService.ShowAsync<DeleteTransaction>("Delete transaction", parameters, options);
+            var result = await dialog.Result;
+
+            // No result or a cancelled dialog means the user kept the transaction, so there is nothing to do.
+            if (result is null || result.Canceled)
+            {
+                return;
+            }
+
+            try
+            {
+                IsLoading = true;
+
+                await TransactionRepository.DeleteTransactionWithLinesAsync(transaction.Id);
+
+                // The card is gone, so its expanded/collapsed state would only leak if it were kept.
+                ExpandedTransactions.Remove(transaction.Id);
+
+                ToastService.ShowSuccess("Transaction deleted successfully");
+
+                // Reload the range so the totals and the table no longer count the deleted transaction.
+                await ApplyFilter();
+            }
+            catch (InvalidOperationException ex)
+            {
+                Logger?.LogWarning(ex, "DeleteTransaction failed for transaction {TransactionId}.", transaction.Id);
+                ToastService.ShowError(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                Logger?.LogError(ex, "DeleteTransaction failed for transaction {TransactionId}.", transaction.Id);
+                ToastService.ShowError("Failed to delete transaction");
+            }
+            finally
+            {
+                IsLoading = false;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+
         protected TableGroupDefinition<FlatTransactionRow> TransactionGroupDefinition = new()
         {
             GroupName = "Transaction",

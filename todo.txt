@@ -1,5 +1,3 @@
-- The delete functionality for a saving account should warn the user that if that account has money then the account will breaking
-	deleted and the money on it will restored to his checking accounta, also, all related transaction lines will be deleted as well.
 - "Auto-balance entry" modifications:
 	- Allow User Override¿?
 	  Let users choose which account to balance against, Store their choice explicitly
